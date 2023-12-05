@@ -10,6 +10,9 @@ import generalRoutes from './routes/general.js';
 import managementRoutes from './routes/management.js';
 import salesRoutes from './routes/sales.js';
 
+import User from './models/user.js';
+import { dataUser } from './data/index.js';
+
 
 dotenv.config();
 const app = express();
@@ -30,5 +33,7 @@ app.use("/sales", salesRoutes);
 //Mongoose setup
 const PORT = process.env.PORT || 5000;
 mongoose.connect(process.env.MONGO_URL)
-    .then(() => app.listen(PORT, () => console.log(`Server running on port: ${PORT}`)))
+    .then(() => {
+        app.listen(PORT, () => console.log(`Server running on port: ${PORT}`));
+    })
     .catch((error) => console.log(`${error.message} did not connect`));

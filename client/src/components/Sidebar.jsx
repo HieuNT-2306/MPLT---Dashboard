@@ -1,11 +1,12 @@
 import React from 'react'
 import { Box, Divider, Drawer, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography, useTheme } from '@mui/material'
-import { AdminPanelSettings, AdminPanelSettingsOutlined, BarChartOutlined, CalendarViewMonthOutlined, ChevronLeft, Group, GroupOutlined, HomeOutlined, PointOfSale, PointOfSaleOutlined, ReceiptLongOutlined, SettingsOutlined, ShoppingBagOutlined, Today, TodayOutlined } from '@mui/icons-material'
+import { AdminPanelSettings, AdminPanelSettingsOutlined, BarChartOutlined, CalendarViewMonthOutlined, ChevronLeft, ChevronRight, ChevronRightOutlined, Group, GroupOutlined, HomeOutlined, PointOfSale, PointOfSaleOutlined, ReceiptLongOutlined, SettingsOutlined, ShoppingBagOutlined, Today, TodayOutlined } from '@mui/icons-material'
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import FlexBetween from './FlexBetween'
 
 const Sidebar = ({ drawerWidth,
+  user,
   isSideBarOpen,
   setIsSideBarOpen,
   isNonMobile }) => {
@@ -14,75 +15,75 @@ const Sidebar = ({ drawerWidth,
   const navigate = useNavigate();
   const theme = useTheme();
 
-  const navItems = [
-    {
-      text: "Bảng quản lý",
-      icon: <HomeOutlined />,
-      nav: "/"
-    },
-    {
-      text: "Khách hàng",
-      icon: null,
-      nav: null
-    },
-    {
-      text: "Sản phẩm",
-      icon: <ShoppingBagOutlined />,
-      nav: "/san-pham"
-    },
-    {
-      text: "Danh sách khách hàng",
-      icon: <GroupOutlined />,
-      nav: "/danh-sach-khach-hang"
-    },
-    {
-      text: "Giao dịch gần đây",
-      icon: <ReceiptLongOutlined />,
-      nav: "/giao-dich-gan-day"
-    },
-    {
-      text: "Doanh thu",
-      icon: null,
-      nav: null
-    },
-    {
-      text: "Thống kê doanh thu",
-      icon: <PointOfSaleOutlined />,
-      nav: "/thong-ke-doanh-thu"
-    },
-    {
-      text: "Hằng ngày",
-      icon: <TodayOutlined />,
-      nav: "/hang-ngay"
-    },
-    {
-      text: "Hằng tháng",
-      icon: <CalendarViewMonthOutlined />,
-      nav: "/hang-thang"
-    },
-    {
-      text: "Phân tích doanh thu",
-      icon: <BarChartOutlined />,
-      nav: "/phan-tich-doanh-thu"
-    },
-    {
-      text: "Quản lý",
-      icon: null,
-      nav: "/quan-ly"
-    },
-    {
-      text: "Tài khoản",
-      icon: <AdminPanelSettingsOutlined />,
-      nav: "/tai-khoan"
-    },
-    {
-      text: "Cài đặt giao diện",
-      icon: <SettingsOutlined />,
-      nav: "/cai-dat-giao-dien"
-    }
-  ]
+    const navItems = [
+      {
+        text: "Bảng quản lý",
+        icon: <HomeOutlined />,
+        nav: "/bang-quan-ly"
+      },
+      {
+        text: "Khách hàng",
+        icon: null,
+        nav: null
+      },
+      {
+        text: "Sản phẩm",
+        icon: <ShoppingBagOutlined />,
+        nav: "/san-pham"
+      },
+      {
+        text: "Khách hàng",
+        icon: <GroupOutlined />,
+        nav: "/danh-sach-khach-hang"
+      },
+      {
+        text: "Giao dịch gần đây",
+        icon: <ReceiptLongOutlined />,
+        nav: "/giao-dich-gan-day"
+      },
+      {
+        text: "Doanh thu",
+        icon: null,
+        nav: null
+      },
+      {
+        text: "Thống kê doanh thu",
+        icon: <PointOfSaleOutlined />,
+        nav: "/thong-ke-doanh-thu"
+      },
+      {
+        text: "Hằng ngày",
+        icon: <TodayOutlined />,
+        nav: "/hang-ngay"
+      },
+      {
+        text: "Hằng tháng",
+        icon: <CalendarViewMonthOutlined />,
+        nav: "/hang-thang"
+      },
+      {
+        text: "Phân tích doanh thu",
+        icon: <BarChartOutlined />,
+        nav: "/phan-tich-doanh-thu"
+      },
+      {
+        text: "Quản lý",
+        icon: null,
+        nav: "/quan-ly"
+      },
+      {
+        text: "Tài khoản",
+        icon: <AdminPanelSettingsOutlined />,
+        nav: "/tai-khoan"
+      },
+      {
+        text: "Cài đặt giao diện",
+        icon: <SettingsOutlined />,
+        nav: "/cai-dat-giao-dien"
+      }
+    ]
 
-  useEffect(() => { setActive(pathname.substring(1)) }, [pathname]);
+  useEffect(() => { setActive(pathname) }, [pathname]);
 
   return (
     <Box component="nav">
@@ -104,7 +105,7 @@ const Sidebar = ({ drawerWidth,
           }}
         >
           <Box width="100%">
-            <Box margin="1rem 1rem 1.5rem 1.5rem">
+            <Box margin="1rem 0.5rem 0.5rem 0.5rem">
               <FlexBetween color={theme.palette.secondary.main}>
                 <Box display="flex" alignItems="center" gap="0.5rem">
                   <Typography variant="h5" fontWeight="bold">Mỹ Phẩm Lan Thư</Typography>
@@ -118,40 +119,49 @@ const Sidebar = ({ drawerWidth,
               {
                 navItems.map(({ text, icon, nav }, index) => {
                   if (!icon) {
-                    return (
-                      <Typography key={text} sx={{ margin: "2rem 0rem 1.5rem 3rem" }} variant="h7" fontWeight="bold">
+                    return ( <>
+                      <Divider sx={{  
+                        margin: "0rem 0rem 1rem 0rem",  
+                      }} />
+                      <Typography key={text} sx={{ margin: "1.5rem 0rem 1.5rem 3rem" }} variant="h7" fontWeight="bold">
                         {text}
                       </Typography>
+                      </>
                     )
                   }
-
-                  const lcText = text.toLowerCase().replaceAll(" ", "-");
 
                   return (
                     <ListItem key={text} disablePadding>
                       <ListItemButton onClick={() => {
-                        setActive(lcText);
+                        setActive(nav);
                         navigate(`${nav}`);
                       }}
                         sx={{
-                          backgroundColor: active === lcText ? theme.palette.secondary[300] : "transparent",
-                          color: active === lcText ? theme.palette.primary.main : theme.palette.secondary[100],
+                          //backgroundColor: active === nav ? theme.palette.secondary[300]: "transparent",
+                          //color: active === nav ? theme.palette.primary[600] : theme.palette.secondary[100],
                         }}
-                        selected={active === lcText}>
+                        selected={active === nav}>
                         <ListItemIcon sx={{
-                          color: active === lcText ? theme.palette.primary.main : theme.palette.secondary[200],
+                          //color: active === nav ? theme.palette.primary.main : theme.palette.secondary[200],
                           marginLeft: "1rem"
                         }}>
                           {icon}
                         </ListItemIcon>
-                        <ListItemText primary={text} />
-                        {active === lcText && <Divider sx={{ margin: "0rem 2rem 0rem 0rem" }} />} 
+                        <ListItemText primary={text} size={"1rem"} />
+                        {active === nav && <ChevronRightOutlined sx={{ margin: "0rem 2rem 0rem 0rem" }} />} 
                       </ListItemButton>
                     </ListItem>
                   )
                 })}
             </List>
           </Box>
+          <Box position="absolute" bottom="0rem" width= "100%">
+            <Divider />
+            <FlexBetween sx={{ margin: "1rem 1rem 1.5rem 1.5rem" }}> 
+              <Typography variant="h7" fontWeight="bold">v1.0.0</Typography>
+            </FlexBetween>
+          </Box>
+            
         </Drawer>
       )}
     </Box>
