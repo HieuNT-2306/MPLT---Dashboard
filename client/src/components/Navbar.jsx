@@ -5,7 +5,9 @@ import { useDispatch } from 'react-redux';
 import { setMode } from 'state';
 import { AppBar, IconButton, InputBase, Toolbar, useTheme } from '@mui/material';
 
-const Navbar = () => {
+const Navbar = ({  isSideBarOpen,
+  setIsSideBarOpen}
+) => {
   const dispatch = useDispatch();
   const theme = useTheme();
 
@@ -24,17 +26,18 @@ const Navbar = () => {
       >
         {/*Left*/}
         <FlexBetween>
-          <MenuIcon />
-          <IconButton onClick={() => console.log("open sizebar")} />
+          <IconButton onClick={() => {
+            setIsSideBarOpen(!isSideBarOpen);
+          }}> <MenuIcon /></IconButton>
           <FlexBetween backgroundColor={theme.palette.background.alt}
             sx={{
               borderRadius: "9px",
-              padding: "4px 8px",
+              padding: "8px 8px",
               gap: "3rem",
               padding: "0.1rem 1.5rem",
             }}
           >
-            <InputBase placeholder='Search...' sx={{ flexbasis: "30%" }} />
+            <InputBase placeholder='Tìm kiếm...' sx={{ flexbasis: "30%" }} />
             <IconButton>
               <Search />
             </IconButton>
