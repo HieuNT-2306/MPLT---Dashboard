@@ -199,3 +199,86 @@ export const dataProductStat = [
   },
   // Add more fake productStat data as needed
 ];
+
+export const dataUser = [
+  {
+      name: 'John Doe',
+      email: 'john.doe@example.com',
+      password: 'password1',
+      address: '123 Main St, City',
+      phonenumber: '123-456-7890',
+      role: 'user'
+  },
+  {
+      name: 'Jane Smith',
+      email: 'jane.smith@example.com',
+      password: 'password2',
+      address: '456 Elm St, City',
+      phonenumber: '987-654-3210',
+      role: 'admin'
+  },
+  {
+      name: 'Alice Johnson',
+      email: 'alice.johnson@example.com',
+      password: 'password3',
+      address: '789 Oak St, City',
+      phonenumber: '567-890-1234',
+      role: 'user'
+  },
+  {
+      name: 'Bob Anderson',
+      email: 'bob.anderson@example.com',
+      password: 'password4',
+      address: '321 Pine St, City',
+      phonenumber: '890-123-4567',
+      role: 'user'
+  },
+  {
+      name: 'Sarah Davis',
+      email: 'sarah.davis@example.com',
+      password: 'password5',
+      address: '654 Cedar St, City',
+      phonenumber: '012-345-6789',
+      role: 'admin'
+  },
+  {
+      name: 'Michael Wilson',
+      email: 'michael.wilson@example.com',
+      password: 'password6',
+      address: '987 Walnut St, City',
+      phonenumber: '345-678-9012',
+      role: 'user'
+  },
+  {
+      name: 'Emily Taylor',
+      email: 'emily.taylor@example.com',
+      password: 'password7',
+      address: '210 Maple St, City',
+      phonenumber: '678-901-2345',
+      role: 'user'
+  },
+  {
+      name: 'David Martinez',
+      email: 'david.martinez@example.com',
+      password: 'password8',
+      address: '543 Birch St, City',
+      phonenumber: '901-234-5678',
+      role: 'admin'
+  },
+  {
+      name: 'Olivia Brown',
+      email: 'olivia.brown@example.com',
+      password: 'password9',
+      address: '876 Spruce St, City',
+      phonenumber: '234-567-8901',
+      role: 'user'
+  },
+  {
+      name: 'Daniel Thompson',
+      email: 'daniel.thompson@example.com',
+      password: 'password10',
+      address: '109 Fir St, City',
+      phonenumber: '567-890-1234',
+      role: 'user'
+  }
+]

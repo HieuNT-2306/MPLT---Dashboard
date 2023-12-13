@@ -6,6 +6,7 @@ import { useMemo } from "react";
 import { BrowserRouter, Routes, Navigate, Route } from "react-router-dom";
 import Dashboard  from "pages/dashboard";
 import Products from "pages/products";
+import Customers from "pages/customers";
 import Layout from "pages/layout";
 
 
@@ -23,6 +24,7 @@ function App() {
               <Route path="/" element={<Navigate to="/bang-quan-ly" replace />} />
               <Route path="/bang-quan-ly" element={<Dashboard />} />
               <Route path="/san-pham" element={<Products />} />
+              <Route path="/danh-sach-khach-hang" element={<Customers />} />
             </Route>
           </Routes>
         </ThemeProvider>
