@@ -282,3 +282,26 @@ export const dataUser = [
       role: 'user'
   }
 ]
+export const dataUser2 = [
+  {
+    name: 'VanDyk Thompson',
+    email: 'vandky.thompson@example.com',
+    password: 'password10',
+    address: '109 Fir St, City',
+    phonenumber: '567-890-1234',
+    purchasevalue: 1000,
+    purchaseamount: 10,
+    role: 'user'
+}, 
+{
+  name: 'Jana Smith',
+  email: 'jana.smith@example.com',
+  password: 'password10',
+  address: '109 Fir St, City',
+  phonenumber: '567-890-1234',
+  purchasevalue: 200,
+  purchaseamount: 2,
+  role: 'user'
+}, 
+]
+

@@ -14,6 +14,13 @@ const Customers = () => {
         { field: 'email', headerName: 'Email', flex: 1 },
         { field: 'phonenumber', headerName: 'Số điện thoại', flex: 1 },
         { field: 'address', headerName: 'Địa chỉ', flex: 1 },
+        { field: 'purchasevalue', headerName: 'Số tiền mua hàng', flex: 1, 
+            renderCell: (params) => {
+                return (
+                    <span>{params.value.toLocaleString('vi-VN', {style : 'currency', currency : 'VND'})}</span>
+                )
+            }},
+        { field: 'purchaseamount', headerName: 'Số lần mua hàng', flex: 1},
         { field: 'createdAt', headerName: 'Ngày tạo', flex: 0.8 ,
             renderCell: (params) => {
                 return (
@@ -21,16 +28,9 @@ const Customers = () => {
                 )
             }
         },
-        { field: 'updatedAt', headerName: 'Ngày cập nhật', flex: 0.8,
-            renderCell: (params) => {
-                return (
-                    <span>{new Date(params.value).toLocaleDateString('vi-VN')}</span>
-                )
-            }
-     },
     ];
   return (
-    <Box m="0.5rem 0.5rem">
+    <Box m="0.5rem 1.5rem">
         <Header title="Khách hàng" subTitle="Danh sách khách hàng"/>
         <Box
             sx ={{
@@ -45,6 +45,7 @@ const Customers = () => {
                     color: theme.palette.secondary[100],
                     fontWeight: 600
                 },
+                
             }}
         >
             <DataGrid
@@ -52,6 +53,7 @@ const Customers = () => {
                 getRowId={(row) => row._id}
                 rows={data || []}
                 columns={columns}
+                padding="0.5rem"
             >
             </DataGrid>
         </Box>

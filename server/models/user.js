@@ -25,6 +25,14 @@ const UserSchema = mongoose.Schema({
         enum: ['user', 'admin'],
         default: 'admin'
     },
+    purchasevalue: {
+        type: Number,
+        default: 0
+    },
+    purchaseamount: {
+        type: Number,
+        default: 0
+    },
 }, {timestamps: true});
 
 const User = mongoose.model('User', UserSchema);  // User is the name of the model
