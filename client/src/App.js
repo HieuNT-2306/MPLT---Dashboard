@@ -5,6 +5,7 @@ import { useSelector } from "react-redux";
 import { useMemo } from "react";
 import { BrowserRouter, Routes, Navigate, Route } from "react-router-dom";
 import Dashboard  from "pages/dashboard";
+import Products from "pages/products";
 import Layout from "pages/layout";
 
 
@@ -21,6 +22,7 @@ function App() {
             <Route element={<Layout />}>
               <Route path="/" element={<Navigate to="/bang-quan-ly" replace />} />
               <Route path="/bang-quan-ly" element={<Dashboard />} />
+              <Route path="/san-pham" element={<Products />} />
             </Route>
           </Routes>
         </ThemeProvider>
