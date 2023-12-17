@@ -1,7 +1,10 @@
 import mongoose from 'mongoose';
 
 const TransactionSchema = mongoose.Schema({
-    userId: String,
+    userId:  {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
     cost: String,
     products:{
         type: [mongoose.Types.ObjectId],

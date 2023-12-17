@@ -53,9 +53,12 @@ export const getTransactions = async (req, res) => {
         const transactions = await Transaction.find({
             $or: [
                 {cost: {$regex: new RegExp(search, "i") }},
-                {userId: {$regex: new RegExp(search, "i") }}
             ]
-        }).sort(sortFormatted).limit(Number(pageSize)).skip((Number(page) - 1) * Number(pageSize));
+        }).populate({
+            path: 'userId',
+            select: 'email name phonenumber -_id'
+        })
+        .sort(sortFormatted).limit(Number(pageSize)).skip((Number(page) - 1) * Number(pageSize));
         
         const total = await Transaction.countDocuments({
             name: {$regex: search, $options: "i"}

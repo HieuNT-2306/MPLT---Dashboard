@@ -12,13 +12,12 @@ const Transaction = () => {
     const [sort, setSort] = useState({ });
     const [search, setSearch] = useState("");
     const [searchInput, setSearchInput] = useState("");
-
-
     const {data, isLoading} = useGetTransactionsQuery({ page, pageSize, sort: JSON.stringify(sort), search });
     console.log("transaction", data);   
     const columns = [
-        { field: 'name', headerName: 'Tên khách hàng', flex: 1 },
-        { field: 'email', headerName: 'Email', flex: 1 },
+        { field: 'userId.name', headerName: 'Tên khách hàng', flex: 1, valueGetter: (params) => params.row.userId.name  },
+        { field: 'email', headerName: 'Email', flex: 1,  valueGetter: (params) => params.row.userId.email },
+        { field: 'phonenumber', headerName: 'Số điện thoại', flex: 1,  valueGetter: (params) => params.row.userId.phonenumber },
         { field: 'products', headerName: 'Số sản phẩm mua', flex: 1, sortable: false,
             renderCell: (params) => {
                 return (
