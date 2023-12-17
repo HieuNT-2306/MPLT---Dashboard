@@ -305,3 +305,16 @@ export const dataUser2 = [
 }, 
 ]
 
+export const dataTransaction = [
+  {
+    userId: "656f0fd11fcf60fc1fbe0def",
+    cost: 100,
+    products: ["65798a334a0fe95c704d494f", "65798a334a0fe95c704d4950"]
+  },
+  {
+    userId: "6579c1b37702a41986e39e3d",
+    cost: 200,
+    products: ["65798a334a0fe95c704d4951", "65798a334a0fe95c704d4950"]
+  }
+]
+

@@ -37,7 +37,7 @@ const Sidebar = ({ drawerWidth,
         nav: "/danh-sach-khach-hang"
       },
       {
-        text: "Giao dịch gần đây",
+        text: "Giao dịch",
         icon: <ReceiptLongOutlined />,
         nav: "/giao-dich-gan-day"
       },

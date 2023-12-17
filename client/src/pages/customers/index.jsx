@@ -48,14 +48,14 @@ const Customers = () => {
                 
             }}
         >
-            <DataGrid
+            {
+                data ? <DataGrid
                 loading={!data}
                 getRowId={(row) => row._id}
                 rows={data || []}
                 columns={columns}
-                padding="0.5rem"
-            >
-            </DataGrid>
+                /> : <h1>Đang tải...</h1>
+            }
         </Box>
     </Box>
   )
