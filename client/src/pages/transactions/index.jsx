@@ -69,6 +69,7 @@ const Transaction = () => {
                 rowCount={(data && data.total) || 0}
                 paginationMode='server'
                 sortingMode='server'
+                density='compact'
                 rowsPerPageOptions={[10, 20, 50]}
                 onPageChange={(params) => setPage(params)}
                 onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}

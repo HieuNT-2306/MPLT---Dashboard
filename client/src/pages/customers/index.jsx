@@ -2,7 +2,8 @@ import React from 'react'
 import { Box, useTheme } from '@mui/material'
 import { useGetCustomersQuery } from 'state/api'
 import Header from 'components/Header'
-import { DataGrid } from '@mui/x-data-grid'
+import { DataGrid, viVN } from '@mui/x-data-grid'
+import DataGridCustomToolbar from 'components/DataGridCustomToolbar'
 
 const Customers = () => {
     const theme = useTheme();
@@ -54,6 +55,9 @@ const Customers = () => {
                 getRowId={(row) => row._id}
                 rows={data || []}
                 columns={columns}
+                slots={{toolbar: DataGridCustomToolbar}}
+                density='compact'
+                localeText={viVN.components.MuiDataGrid.defaultProps.localeText}    
                 /> : <h1>Đang tải...</h1>
             }
         </Box>

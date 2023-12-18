@@ -14,7 +14,7 @@ const DataGridCustomToolbar = ({searchInput, setSearchInput, search, setSearch})
       <FlexBetween width="100%">
         <FlexBetween>
             <GridToolbarColumnsButton sx={buttonStyle} />
-            <GridToolbarDensitySelector sx={buttonStyle} />
+            <GridToolbarDensitySelector sx={buttonStyle} defaultValue='compact'/>
             <GridToolbarExport sx={buttonStyle}/>
         </FlexBetween>
         <TextField 
