@@ -1,22 +1,10 @@
 import mongoose from 'mongoose';
 
-const ProductStatSchema = mongoose.Schema({
-    productId: {
-        type: String,
-        required: true
-    },
-    yearlySalesTotal: {
-        type: Number, 
-        required: true,
-    },
-    yearlySalesUnits:{
-        type: Number, 
-        required: true,
-    },
-    year:{
-        type: Number,
-        required: true
-    },
+const OverallStatSchema = mongoose.Schema({
+    totalCustomer: Number,
+    yearlySalesTotal: Number,
+    yearlyTotalSoldUnit: Number,
+    year: Number,
     monthlyData: [{
         month: {
             type: Number,
@@ -44,7 +32,11 @@ const ProductStatSchema = mongoose.Schema({
             required: true
         }
     }],
-}, {timestamps: true});
+    salesByCategory:{
+        type: Map,
+        of: Number
+    },
+}, { timestamps: true });
 
-const ProductStat = mongoose.model('ProductStat', ProductStatSchema);  // User is the name of the model
-export default ProductStat;
+const OverallStat = mongoose.model('OverallStat', OverallStatSchema);  // User is the name of the model
+export default OverallStat;
