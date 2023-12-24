@@ -14,7 +14,7 @@ import User from './models/user.js';
 import Product from './models/product.js';
 import ProductStat from './models/productStat.js';
 import Transaction from './models/transaction.js';
-import { dataProduct, dataProductStat, dataTransaction, dataOverallStat } from './data/index.js';
+import { dataProduct, dataProductStat, dataTransaction, dataStat } from './data/index.js';
 import OverallStat from './models/overallStat.js';
 
 
@@ -39,6 +39,7 @@ const PORT = process.env.PORT || 5000;
 mongoose.connect(process.env.MONGO_URL)
     .then(() => {
         app.listen(PORT, () => console.log(`Server running on port: ${PORT}`));
-        //OverallStat.insertMany(dataOverallStat);
+        OverallStat.collection.drop();
+        OverallStat.insertMany(dataStat);
     })
     .catch((error) => console.log(`${error.message} did not connect`));

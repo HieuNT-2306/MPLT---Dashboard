@@ -317,7 +317,7 @@ export const dataTransaction = [
     products: ["65798a334a0fe95c704d4951", "65798a334a0fe95c704d4950"]
   }
 ]
-export const dataOverallStat = {
+const dataOverallStat = {
   totalCustomer: 10,
   yearlySalesTotal: 10000,
   yearlyTotalSoldUnit: 5000,
@@ -386,149 +386,79 @@ export const dataOverallStat = {
   ],
   dailyData: [
     {
-      day: "2023-2-7",
+      day: "2023-7-1",
       salesTotal: 100,
       salesUnits: 50
     },
     {
-      day: "2023-3-7",
+      day: "2023-7-2",
       salesTotal: 200,
       salesUnits: 100
     },
     {
-      day: "2023-4-7",
+      day: "2023-7-3",
       salesTotal: 300,
       salesUnits: 200
     },
     {
-      day: "2023-5-7",
+      day: "2023-7-4",
       salesTotal: 340,
       salesUnits: 210
     },
     {
-      day: "2023-6-7",
+      day: "2023-7-5",
       salesTotal: 421,
       salesUnits: 280
     },
     {
-      day: "2023-7-7",
+      day: "2023-7-6",
       salesTotal: 520,
       salesUnits: 300
     },
     {
-      day: "2023-8-7",
+      day: "2023-7-7",
       salesTotal: 550,
       salesUnits: 320
     },
     {
-      day: "2023-9-7",
+      day: "2023-7-8",
       salesTotal: 572,
       salesUnits: 320
     },
     {
-      day: "2023-10-7",
+      day: "2023-7-9",
       salesTotal: 590,
       salesUnits: 330
     },
     {
-      day: "2023-11-7",
+      day: "2023-7-10",
       salesTotal: 650,
       salesUnits: 350
     },
     {
-      day: "2023-12-7",
+      day: "2023-7-11",
       salesTotal: 750,
       salesUnits: 370
     },
     {
-      day: "2023-13-7",
+      day: "2023-7-12",
       salesTotal: 830,
       salesUnits: 420
     },  
     {
-      day: "2023-14-7",
+      day: "2023-7-13",
       salesTotal: 900,
       salesUnits: 500
     },
     {
-      day: "2023-15-7",
+      day: "2023-7-14",
       salesTotal: 1000,
       salesUnits: 600
     },
     {
-      day: "2023-16-7",
+      day: "2023-7-15",
       salesTotal: 1100,
       salesUnits: 700
-    },
-    {
-      day: "2023-17-7",
-      salesTotal: 1200,
-      salesUnits: 800
-    },
-    {
-      day: "2023-18-7",
-      salesTotal: 1300,
-      salesUnits: 900
-    },
-    {
-      day: "2023-19-7",
-      salesTotal: 1400,
-      salesUnits: 1000
-    },
-    {
-      day: "2023-20-7",
-      salesTotal: 1500,
-      salesUnits: 1100
-    },
-    {
-      day: "2023-21-7",
-      salesTotal: 1600,
-      salesUnits: 1200
-    },
-    {
-      day: "2023-22-7",
-      salesTotal: 1700,
-      salesUnits: 1300
-    },
-    {
-      day: "2023-23-7",
-      salesTotal: 1800,
-      salesUnits: 1400
-    },
-    {
-      day: "2023-24-7",
-      salesTotal: 1900,
-      salesUnits: 1500
-    },
-    {
-      day: "2023-25-7",
-      salesTotal: 2000,
-      salesUnits: 1600
-    },
-    {
-      day: "2023-26-7",
-      salesTotal: 2100,
-      salesUnits: 1700
-    },
-    {
-      day: "2023-27-7",
-      salesTotal: 2200,
-      salesUnits: 1800
-    },
-    {
-      day: "2023-28-7",
-      salesTotal: 2300,
-      salesUnits: 1900
-    },
-    {
-      day: "2023-29-7",
-      salesTotal: 2400,
-      salesUnits: 2000
-    },
-    {
-      day: "2023-30-7",
-      salesTotal: 2500,
-      salesUnits: 2100
     },
   ],
   salesByCategory: {
@@ -537,3 +467,9 @@ export const dataOverallStat = {
     "Category 3": 3000
   }
 }
+
+// dataOverallStat.dailyData.forEach((entry) => {
+//   entry.day = new Date(entry.day);
+// });
+
+export const dataStat = dataOverallStat;

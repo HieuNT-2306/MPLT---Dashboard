@@ -10,6 +10,7 @@ import Customers from "pages/customers";
 import Layout from "pages/layout";
 import Transaction from "pages/transactions";
 import Overview from "pages/overview";
+import Daily from "pages/daily";
 
 
 function App() {
@@ -29,6 +30,7 @@ function App() {
               <Route path="/danh-sach-khach-hang" element={<Customers />} />
               <Route path="/giao-dich-gan-day" element={<Transaction />} />
               <Route path="/thong-ke-doanh-thu" element={<Overview />} />
+              <Route path="/hang-ngay" element={<Daily />} />
             </Route>
           </Routes>
         </ThemeProvider>

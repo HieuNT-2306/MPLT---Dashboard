@@ -47,7 +47,7 @@ const Sidebar = ({ drawerWidth,
         nav: null
       },
       {
-        text: "Thống kê doanh thu",
+        text: "Thống kê",
         icon: <PointOfSaleOutlined />,
         nav: "/thong-ke-doanh-thu"
       },
@@ -62,7 +62,7 @@ const Sidebar = ({ drawerWidth,
         nav: "/hang-thang"
       },
       {
-        text: "Phân tích doanh thu",
+        text: "Phân tích",
         icon: <BarChartOutlined />,
         nav: "/phan-tich-doanh-thu"
       },

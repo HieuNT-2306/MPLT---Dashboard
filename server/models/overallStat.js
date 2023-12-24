@@ -8,15 +8,12 @@ const OverallStatSchema = mongoose.Schema({
     monthlyData: [{
         month: {
             type: Number,
-            required: true
         },
         salesTotal: {
             type: Number,
-            required: true
         },
         salesUnits: {
             type: Number,
-            required: true
         }
     }],
     dailyData: [{
@@ -25,11 +22,9 @@ const OverallStatSchema = mongoose.Schema({
         },
         salesTotal: {
             type: Number,
-            required: true
         },
         salesUnits: {
             type: Number,
-            required: true
         }
     }],
     salesByCategory:{
