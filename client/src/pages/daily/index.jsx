@@ -15,7 +15,7 @@ const Daily = () => {
     const [formattedData] = useMemo(() => {
         if (!data) return [];
 
-        const { dailyData } = data[0];
+        const { dailyData } = data;
         const totalSalesLine = {
             id: "Doanh thu",
             color: theme.palette.secondary.main,

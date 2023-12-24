@@ -1,6 +1,6 @@
 import React from 'react'
 import { Box, Divider, Drawer, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography, useTheme } from '@mui/material'
-import { AdminPanelSettings, AdminPanelSettingsOutlined, BarChartOutlined, CalendarViewMonthOutlined, ChevronLeft, ChevronRight, ChevronRightOutlined, Group, GroupOutlined, HomeOutlined, PointOfSale, PointOfSaleOutlined, ReceiptLongOutlined, SettingsOutlined, ShoppingBagOutlined, Today, TodayOutlined } from '@mui/icons-material'
+import { AdminPanelSettings, AdminPanelSettingsOutlined, CalendarViewMonthOutlined, ChevronLeft, ChevronRightOutlined, Group, GroupOutlined, HomeOutlined, PieChartOutlineRounded, PieChartOutlineTwoTone, PointOfSale, PointOfSaleOutlined, ReceiptLongOutlined, SettingsOutlined, ShoppingBagOutlined, Today, TodayOutlined } from '@mui/icons-material'
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import FlexBetween from './FlexBetween'
@@ -53,17 +53,17 @@ const Sidebar = ({ drawerWidth,
       },
       {
         text: "Hằng ngày",
-        icon: <TodayOutlined />,
+        icon: <CalendarViewMonthOutlined />,
         nav: "/hang-ngay"
       },
       {
-        text: "Hằng tháng",
-        icon: <CalendarViewMonthOutlined />,
-        nav: "/hang-thang"
+        text: "Trong ngày",
+        icon: <TodayOutlined />,
+        nav: "/trong-ngay"
       },
       {
         text: "Phân tích",
-        icon: <BarChartOutlined />,
+        icon: <PieChartOutlineRounded />,
         nav: "/phan-tich-doanh-thu"
       },
       {

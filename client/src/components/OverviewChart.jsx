@@ -13,7 +13,7 @@ const OverviewChart = ({
   console.log("Overall", data);
   const [totalSalesLine, totalUnitsLine] = useMemo(() => {
     if (!data) return [];
-    const { monthlyData } = data[0];
+    const { monthlyData } = data;
     console.log("Monthly data", monthlyData);
     const totalSalesLine = {
       id: 'Doanh thu',

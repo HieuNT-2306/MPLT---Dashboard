@@ -319,8 +319,8 @@ export const dataTransaction = [
 ]
 const dataOverallStat = {
   totalCustomer: 10,
-  yearlySalesTotal: 10000,
-  yearlyTotalSoldUnit: 5000,
+  yearlySalesTotal: 13000000,
+  yearlyTotalSoldUnit: 1260,
   year: 2023,
   monthlyData: [
     {
@@ -462,14 +462,17 @@ const dataOverallStat = {
     },
   ],
   salesByCategory: {
-    "Category 1": 3000,
-    "Category 2": 4000,
-    "Category 3": 3000
+    "Category 1": 2300000,
+    "Category 2": 2400000,
+    "Category 3": 3400000,
+    "Category 4": 4900000
+  },
+  unitsByCategory: {
+    "Category 1": 310,
+    "Category 2": 420,
+    "Category 3": 320,
+    "Category 4": 210
   }
 }
-
-// dataOverallStat.dailyData.forEach((entry) => {
-//   entry.day = new Date(entry.day);
-// });
 
 export const dataStat = dataOverallStat;

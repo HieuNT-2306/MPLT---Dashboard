@@ -31,7 +31,11 @@ const OverallStatSchema = mongoose.Schema({
         type: Map,
         of: Number
     },
+    unitsByCategory:{
+        type: Map,
+        of: Number
+    },
 }, { timestamps: true });
 
 const OverallStat = mongoose.model('OverallStat', OverallStatSchema);  // User is the name of the model
-export default OverallStat;
+export default OverallStat; 

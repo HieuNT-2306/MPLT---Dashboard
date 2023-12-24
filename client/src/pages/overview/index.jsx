@@ -9,9 +9,9 @@ const Overview = () => {
   return (
     <Box m='0.5rem 1.5rem'>
       <Header title="Tổng quan" subTitle="Tổng quan về doanh thu"/>
-      <Box height="75vh">
+      <Box height="70vh">
         <FormControl sx={{
-            marginTop: '1rem',
+            marginTop: '0.5rem',
         }}>
             <InputLabel>Xem</InputLabel>
             <Select value={view} label="View" onChange={(e) => setView(e.target.value)}>

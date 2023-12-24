@@ -11,6 +11,8 @@ import Layout from "pages/layout";
 import Transaction from "pages/transactions";
 import Overview from "pages/overview";
 import Daily from "pages/daily";
+import Today from "pages/today";
+import Breakdown from "pages/breakdown";
 
 
 function App() {
@@ -31,6 +33,8 @@ function App() {
               <Route path="/giao-dich-gan-day" element={<Transaction />} />
               <Route path="/thong-ke-doanh-thu" element={<Overview />} />
               <Route path="/hang-ngay" element={<Daily />} />
+              <Route path="/trong-ngay" element={<Today />} />
+              <Route path="/phan-tich-doanh-thu" element={<Breakdown />} />  
             </Route>
           </Routes>
         </ThemeProvider>
