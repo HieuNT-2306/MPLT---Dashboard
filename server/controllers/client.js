@@ -48,7 +48,6 @@ export const getTransactions = async (req, res) => {
             };
             return sortFormatted;
         }
-        console.log(sort)
         const sortFormatted = Boolean(sort) ? generateSort(sort) : {};
         const transactions = await Transaction.find({
             $or: [
@@ -75,3 +74,52 @@ export const getTransactions = async (req, res) => {
         });
     }
 }
+
+export const postProducts = async (req, res) => {
+    try {
+        const { name, description, price, category, supply } = req.body;
+        const newProduct = new Product({
+            name, description, price, category, supply
+        });
+        await newProduct.save();
+        const newProductStat = new ProductStat({
+            productId: newProduct._id,
+            yearlySalesTotal: 0,
+            yearlySalesUnits: 0,
+            year: new Date().getFullYear(),
+            monthlyData: [],
+            dailyData: []
+        });
+        await newProductStat.save();
+        res.status(201).json({ product: newProduct, productStat: newProductStat });
+    } catch(error) {
+        console.log(error);
+        res.status(404).json({
+            message: error.message,
+        });
+    }
+};
+
+export const updateProduct = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, price, description, category, supply } = req.body;
+
+        const product = await Product.findById(id);
+
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+        product.name = name;
+        product.price = price;
+        product.description = description;
+        product.category = category;
+        product.supply = supply;
+
+        const updatedProduct = await product.save();
+
+        res.json(updatedProduct);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
