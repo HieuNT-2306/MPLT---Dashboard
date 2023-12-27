@@ -26,7 +26,7 @@ const OverviewChart = ({
       data: []
     }
     Object.values(monthlyData).reduce((acc, { month, salesTotal, salesUnits }) => {
-      const curSales = acc.sales + salesTotal;
+      const curSales = salesTotal;
       const curUnits = salesUnits;
       totalSalesLine.data = [...totalSalesLine.data, {
         x: month,

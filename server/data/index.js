@@ -460,6 +460,16 @@ const dataOverallStat = {
       salesTotal: 1100,
       salesUnits: 700
     },
+    {
+      day: "2023-12-27",
+      salesTotal: 1100,
+      salesUnits: 700
+    },
+    {
+      day: "2023-12-26",
+      salesTotal: 900,
+      salesUnits: 700
+    },
   ],
   salesByCategory: {
     "Category 1": 2300000,
@@ -474,5 +484,11 @@ const dataOverallStat = {
     "Category 4": 210
   }
 }
+dataOverallStat.dailyData = dataOverallStat.dailyData.map(data => {
+  return {
+    ...data,
+    day: new Date(data.day)
+  };
+});
 
 export const dataStat = dataOverallStat;

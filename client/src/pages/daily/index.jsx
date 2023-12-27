@@ -28,10 +28,9 @@ const Daily = () => {
         };
         console.log("Daily data", dailyData);
         if (dailyData) Object.values(dailyData).forEach(({ day, salesTotal, salesUnits }) => {
-
-            const dateFormatted = new Date(day);
-            if (dateFormatted >= startDate && dateFormatted <= endDate) {
-                const splitDate = day.substring(day.indexOf("-") + 1);
+            const formattedDate = new Date(day);
+            if (formattedDate >= startDate && formattedDate <= endDate) {
+                const splitDate = day.toString().split("T")[0];
 
                 totalSalesLine.data = [
                     ...totalSalesLine.data,
