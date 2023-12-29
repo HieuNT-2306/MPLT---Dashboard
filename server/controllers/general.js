@@ -28,7 +28,6 @@ export const getDashboardStats = async (req, res) => {
             totalCustomer,
             yearlySalesTotal,
             yearlyTotalSoldUnit,
-            monthlyData,
             salesByCategory,
             unitsByCategory
         } = overallStat;

@@ -123,3 +123,20 @@ export const updateProduct = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+export const postCustomer = async (req, res) => {
+    try {
+        const { name, email, phonenumber, address, password, purchasevalue, purchaseamount } = req.body;
+        const newUser = new User({
+            name, email, phonenumber, password, address, purchasevalue, purchaseamount,
+            role: "user",
+        });
+        await newUser.save();
+        res.status(201).json(newUser);
+    } catch(error) {
+        console.log(error);
+        res.status(404).json({
+            message: error.message,
+        });
+    }
+};
