@@ -78,7 +78,7 @@ const OverviewChart = ({
           },
         },
       }}
-      margin={{ top: 10, right: 110, bottom: 70, left: 60 }}
+      margin={{ top: 10, right: 30, bottom: 50, left: 60 }}
       xScale={{ type: 'point' }}
       yScale={{
         type: 'linear',
@@ -114,7 +114,7 @@ const OverviewChart = ({
       areaBaselineValue={20}
       areaOpacity={0.25}
       useMesh={true}
-      tooltip={isDashboard ? null : ({ point }) => {
+      tooltip={({ point }) => {
         return (
             <div
                 style={{
@@ -138,7 +138,6 @@ const OverviewChart = ({
         )
     }}
       legends={[
-        isDashboard ? {} :
           {
             anchor: 'bottom-right',
             direction: 'column',

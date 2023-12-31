@@ -82,7 +82,7 @@ const BreakdownChart = ({ isDashboard = false, isSales, isUnit }) => {
           from: "color",
           modifiers: [["darker", 2]],
         }}
-        tooltip={isDashboard ? null : e => {
+        tooltip={ e => {
             console.log(e.datum);
             const percentage = isSales ? (e.datum.value/data.yearlySalesTotal) : (e.datum.value/data.yearlyTotalSoldUnit);
             return (
@@ -146,10 +146,10 @@ const BreakdownChart = ({ isDashboard = false, isSales, isUnit }) => {
             : "translate(-50%, -100%)",
         }}
       >
-        <Typography variant="h6" fontWeight="600">
+        <Typography variant="h6" fontWeight="200" textAlign="center">
           {!isDashboard && "Tổng:"} {isSales ? 
           (data.yearlySalesTotal).toLocaleString('vi-VN', {style : 'currency', currency : 'VND'}) : 
-          data.yearlyTotalSoldUnit + " Mặt hàng"}
+          data.yearlyTotalSoldUnit + (isDashboard ? "" : "Mặt hàng" )}
         </Typography>
       </Box>
     </Box>
