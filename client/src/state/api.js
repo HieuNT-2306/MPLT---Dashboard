@@ -35,7 +35,7 @@ export const api = createApi({
             providesTags: ['Sales']
         }),
         getDashboardStats: builder.query({
-            query: () => 'general/dashboardStats',
+            query: () => 'general/dashboard',
             providesTags: ['Dashboard']
         }),
     })

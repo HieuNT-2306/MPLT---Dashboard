@@ -22,7 +22,7 @@ export const getDashboardStats = async (req, res) => {
 
         const transactions = await Transaction.find().limit(50).sort({ createdAt: -1 });
 
-        const overallStat = await OverallStat.findOne({ year: currentYear });
+        const overallStat = await OverallStat.findOne({ year: 2023 });
 
         const {
             totalCustomer,
@@ -38,10 +38,17 @@ export const getDashboardStats = async (req, res) => {
             data.day.getFullYear() === currentDay.getFullYear() &&
             data.day.getMonth() === currentDay.getMonth() &&
             data.day.getDate() === currentDay.getDate()
-        );
+        ) || {
+            day: new Date(),
+            salesTotal: 0,
+            salesUnits: 0
+        };
+
+
         res.status(200).json({
             totalCustomer,
             yearlySalesTotal,
+            monthlyData: overallStat.monthlyData,
             yearlyTotalSoldUnit,
             thisMonthData,
             todayData,
