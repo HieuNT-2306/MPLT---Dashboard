@@ -83,7 +83,6 @@ const BreakdownChart = ({ isDashboard = false, isSales, isUnit }) => {
           modifiers: [["darker", 2]],
         }}
         tooltip={ e => {
-            console.log(e.datum);
             const percentage = isSales ? (e.datum.value/data.yearlySalesTotal) : (e.datum.value/data.yearlyTotalSoldUnit);
             return (
                 <div

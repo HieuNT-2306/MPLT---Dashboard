@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const CategorySchema = mongoose.Schema({
+const BrandSchema = mongoose.Schema({
     name: String,
     monthlyData: [{
         year:{
@@ -35,5 +35,5 @@ const CategorySchema = mongoose.Schema({
     }]
 }, {timestamps: true});
 
-const Category = mongoose.model('Category', CategorySchema);  // User is the name of the model
-export default Category;
+const Brand = mongoose.model('Brand', BrandSchema);  
+export default Brand;

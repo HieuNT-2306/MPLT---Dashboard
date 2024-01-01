@@ -8,7 +8,6 @@ export const getProducts = async (req, res) => {
         const products = await Product.find();
         const productsStat = await Promise.all(products.map(async (product) => {
             const productStat = await ProductStat.find({ productId: product._id });
-
             return {
                 ...product._doc,
                 productStat
