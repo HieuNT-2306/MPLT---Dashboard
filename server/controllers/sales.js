@@ -11,28 +11,6 @@ export const getSales = async (req, res) => {
         res.status(404).json({ message: error.message });
     }
 }
-// export const getSalesByYear = async (req, res) => {
-//     try {
-//         const { yearParam } = req.params;
-//         const overallStat = await OverallStat.find({ year: parseInt(yearParam)  });
-//         const category = await Category.find();
-//         const brand = await Brand.find();
-//         const {
-//             totalCustomer,
-//             yearlySalesTotal,
-//             yearlyTotalSoldUnit,
-//             year,
-//             monthlyData,
-//             dailyData,
-//         } = overallStat[0];
-//         const salesByCategory = {};
-//         const unitsByCategory = {};
-
-//         res.status(200).json(overallStat);
-//     } catch (error) {
-//         res.status(404).json({ message: error.message });
-//     }
-// }
 
 export const getSalesByYear = async (req, res) => {
     try {
@@ -40,7 +18,6 @@ export const getSalesByYear = async (req, res) => {
         // const yearParam = 2023;
         const overallStat = await OverallStat.find({ year: parseInt(yearParams) });
         const {
-            year,
             monthlyData,
             dailyData,
         } = overallStat[0];
@@ -73,7 +50,7 @@ export const getSalesByYear = async (req, res) => {
             yearlySalesTotal,
             yearlyTotalSoldUnit,
             totalCustomer,
-            monthlyData,
+            monthlyData,    
             dailyData,
             salesByCategory,
             unitsByCategory,

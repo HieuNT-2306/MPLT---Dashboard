@@ -18,12 +18,7 @@ const Transaction = () => {
         { field: 'userId.name', headerName: 'Tên khách hàng', flex: 1, valueGetter: (params) => params.row.userId.name  },
         { field: 'email', headerName: 'Email', flex: 1,  valueGetter: (params) => params.row.userId.email },
         { field: 'phonenumber', headerName: 'Số điện thoại', flex: 1,  valueGetter: (params) => params.row.userId.phonenumber },
-        { field: 'products', headerName: 'Số sản phẩm mua', flex: 1, sortable: false,
-            renderCell: (params) => {
-                return (
-                    <span>{params.value.length}</span>
-                )
-            } },
+        { field: 'numberOfProducts', headerName: 'Số sản phẩm mua', flex: 1, sortable: false},
         { field: 'createdAt', headerName: 'Ngày mua', flex: 0.8 ,
             renderCell: (params) => {
                 return (

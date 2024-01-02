@@ -1,7 +1,11 @@
 import mongoose from 'mongoose';
 
 const BrandSchema = mongoose.Schema({
-    name: String,
+    name: {
+        type: String,
+        unique: true,
+        required: true,
+    },
     monthlyData: [{
         year:{
             type: Number,

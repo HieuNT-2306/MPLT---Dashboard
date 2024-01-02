@@ -5,11 +5,17 @@ const TransactionSchema = mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     },
-    cost: String,
-    products:{
-        type: [mongoose.Types.ObjectId],
-        of: Number
-    }
+    products: [{
+        productId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Product'
+        },
+        quantity: {
+            type: Number, 
+        }
+    }],
+    cost: Number,
+    numberOfProducts: Number,
 }, {timestamps: true});
 
 const Transaction = mongoose.model('Transaction', TransactionSchema);  // User is the name of the model

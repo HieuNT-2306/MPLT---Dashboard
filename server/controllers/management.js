@@ -18,8 +18,6 @@ export const updateCategory = async (req, res) => {
     try {
         const { id } = req.params;
         const { name, dailyData } = req.body;
-        const day = new Date(dailyData.day);
-
         const category = await Category.findById(id);
 
         if (!category) {
@@ -30,6 +28,7 @@ export const updateCategory = async (req, res) => {
 
         // Update dailyData
         if (dailyData) {
+            const day = new Date(dailyData.day);
             const index = category.dailyData.findIndex((data) =>
                 data.day.getFullYear() === day.getFullYear() &&
                 data.day.getMonth() === day.getMonth() &&
@@ -82,7 +81,6 @@ export const updateBrand = async (req, res) => {
     try {
         const { id } = req.params;
         const { name, dailyData } = req.body;
-        const day = new Date(dailyData.day);
 
         const brand = await Brand.findById(id);
 
@@ -91,8 +89,8 @@ export const updateBrand = async (req, res) => {
         }
 
         if (name) brand.name = name;
-        // Update dailyData
         if (dailyData) {
+            const day = new Date(dailyData.day);
             const index = brand.dailyData.findIndex((data) =>
                 data.day.getFullYear() === day.getFullYear() &&
                 data.day.getMonth() === day.getMonth() &&

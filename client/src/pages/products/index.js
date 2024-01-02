@@ -1,10 +1,12 @@
-import React, {useState} from 'react';
-import{ Box, Card, CardActions, CardContent, Collapse, Button, Typography, useTheme, useMediaQuery} from '@mui/material';
+import React, { useState } from 'react';
+import { Box, Card, CardActions, CardContent, Collapse, Button, Typography, useTheme, useMediaQuery } from '@mui/material';
 import Header from 'components/Header';
 import { useGetProductsQuery } from 'state/api';
+import FlexBetween from 'components/FlexBetween';
 
 const Product = ({
     _id,
+    brand,
     name,
     price,
     description,
@@ -23,21 +25,31 @@ const Product = ({
             }}
         >
             <CardContent>
-                <Typography sx={{
-                    fontSize: 14,
-                }}
-                color={theme.palette.secondary[200]}
-                gutterBottom
-                >
-                    {category}
-                </Typography>
+                <FlexBetween>
+                    <Typography sx={{
+                        fontSize: 14,
+                    }}
+                        color={theme.palette.secondary[200]}
+                        gutterBottom
+                    >
+                        {category}
+                    </Typography>
+                    <Typography sx={{
+                        fontSize: 14,
+                    }}
+                        color={theme.palette.secondary[200]}
+                        gutterBottom
+                    >
+                        {brand}
+                    </Typography>
+                </FlexBetween>
                 <Typography variant="h5" component="div">
                     {name}
                 </Typography>
                 <Typography sx={{
                     marginBottom: "1.5rem"
                 }} color={theme.palette.secondary[400]}>
-                    {Number(price*1000).toFixed(0)}VND
+                    {Number(price).toFixed(0)}VND
                 </Typography>
                 <Typography variant="body2">
                     {description}
@@ -54,7 +66,7 @@ const Product = ({
                     {isExpanded ? "Thu gọn" : "Xem thêm"}
                 </Button>
                 <Button size="small"
-                     sx={{
+                    sx={{
                         color: "red",
                     }}
                 >Xóa</Button>
@@ -84,26 +96,26 @@ const Product = ({
 };
 
 function Products() {
-    const {data, isLoading} = useGetProductsQuery();
+    const { data, isLoading } = useGetProductsQuery();
     console.log("product", data);
     const isNonMoble = useMediaQuery("(min-width:900px)")
-  return (
-    <Box m="0.5rem 1.5rem">
-        <Header title="Sản phẩm" subTitle="Xem danh sách sản phẩm" />
-        {data ? (
-            <Box
-             mt="1rem"
-             display="grid"
-             gridTemplateColumns="repeat(4,minmax(0,1fr))"
-             justifyContent="space-between"
-             rowGap="2rem"
-             columnGap="1.5%"
-             sx={{
-                "& > div": { 
-                    gridColumn: isNonMoble ? undefined : "span 4",
-                }
-             }}
-             >
+    return (
+        <Box m="0.5rem 1.5rem">
+            <Header title="Sản phẩm" subTitle="Xem danh sách sản phẩm" />
+            {data ? (
+                <Box
+                    mt="1rem"
+                    display="grid"
+                    gridTemplateColumns="repeat(4,minmax(0,1fr))"
+                    justifyContent="space-between"
+                    rowGap="2rem"
+                    columnGap="1.5%"
+                    sx={{
+                        "& > div": {
+                            gridColumn: isNonMoble ? undefined : "span 4",
+                        }
+                    }}
+                >
                     {
                         data.map(({
                             _id,
@@ -111,25 +123,27 @@ function Products() {
                             price,
                             description,
                             category,
+                            brand,
                             supply,
                             productStat
                         }) => (
-                            <Product 
-                            key={_id}
-                            _id={_id}
-                            name={name}
-                            price={price}
-                            description={description}
-                            category={category}
-                            supply={supply}
-                            productStat={productStat}
+                            <Product
+                                key={_id}
+                                _id={_id}
+                                name={name}
+                                price={price}
+                                description={description}
+                                category={category}
+                                brand={brand}
+                                supply={supply}
+                                productStat={productStat}
                             />
                         ))
                     }
-            </Box>
-        ) : <h1>Đang tải...</h1>}
-    </Box>
-  )
+                </Box>
+            ) : <h1>Đang tải...</h1>}
+        </Box>
+    )
 }
 
 export default Products

@@ -39,7 +39,6 @@ const PORT = process.env.PORT || 5000;
 mongoose.connect(process.env.MONGO_URL)
     .then(() => {
         app.listen(PORT, () => console.log(`Server running on port: ${PORT}`));
-        OverallStat.collection.drop();
-        OverallStat.insertMany(dataStat);
+        //OverallStat.insertMany(dataStat);
     })
     .catch((error) => console.log(`${error.message} did not connect`));
