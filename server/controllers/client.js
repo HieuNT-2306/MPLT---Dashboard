@@ -193,6 +193,10 @@ export const postTransaction = async (req, res) => {
         for (let i = 0; i < products.length; i++) {
             const productDoc = productDocs[i];
             const quantity = products[i].quantity; // Get quantity from request body
+            productDocs[i] = {
+                ...productDoc._doc,
+                quantity,
+            }
             totalCost += productDoc.price * quantity;
             numberOfProducts += quantity;
         }
@@ -203,22 +207,111 @@ export const postTransaction = async (req, res) => {
             cost: totalCost,
             numberOfProducts,
         });
-        const user = await User.findByIdAndUpdate(userId, {
-            $inc: {
-              purchasevalue: totalCost,
-              purchaseamount: numberOfProducts,
-            },
-          }, { new: true });
-        
-        // const categoryIds = products.map((product) => product.product.category);
-        // const brandIds = products.map((product) => product.product.brand);
-        // console.log(categoryIds);
-        // console.log(brandIds);
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
+        // const user = await User.findByIdAndUpdate(userId, {
+        //     $inc: {
+        //       purchasevalue: totalCost,
+        //       purchaseamount: numberOfProducts,
+        //     },
+        //   }, { new: true });
+        // if (!user) {
+        //     return res.status(404).json({ message: "User not found" });
+        // }
+
+        for (const productDoc of productDocs) {
+            const category = await Category.findById(productDoc.category);
+            if (!category) {
+                throw new Error(`Category not found: ${productDoc.category}`);
+            }
+            const brand = await Brand.findById(productDoc.brand);
+            if (!brand) {
+                throw new Error(`Brand not found: ${productDoc.brand}`);
+            }
+            const day = new Date();
+
+            //Category
+            const existingDailyData = category.dailyData.find((data) =>
+                data.day &&
+                data.day.getFullYear() === day.getFullYear() &&
+                data.day.getMonth() === day.getMonth() &&
+                data.day.getDate() === day.getDate()
+            );
+            if (existingDailyData) {
+                existingDailyData.salesTotal += productDoc.price * productDoc.quantity;
+                existingDailyData.salesUnits += productDoc.quantity;
+                existingDailyData.transactionNumbers += 1; // Update transactionNumbers
+            } else {
+                category.dailyData.push({
+                    day,
+                    salesTotal: productDoc.price * productDoc.quantity,
+                    salesUnits: productDoc.quantity,
+                    transactionNumbers: 1, // Initialize transactionNumbers
+                });
+            }
+
+            // Update monthlyData
+            const monthIndex = category.monthlyData.findIndex((data) =>
+                data.year === day.getFullYear() && data.month === day.getMonth()
+            );
+            if (monthIndex !== -1) {
+                category.monthlyData[monthIndex].salesTotal += productDoc.price * productDoc.quantity;
+                category.monthlyData[monthIndex].salesUnits += productDoc.quantity;
+                category.monthlyData[monthIndex].transactionNumbers += 1;
+            } else {
+                category.monthlyData.push({
+                    year: day.getFullYear(),
+                    month: day.getMonth(),
+                    salesTotal: productDoc.price * productDoc.quantity,
+                    salesUnits: productDoc.quantity,
+                    transactionNumbers: 1,
+                });
+            }
+            await category.save();
+            // Brand
+
+            const existingDailyDataBrand = brand.dailyData.find((data) =>
+                data.day &&
+                data.day.getFullYear() === day.getFullYear() &&
+                data.day.getMonth() === day.getMonth() &&
+                data.day.getDate() === day.getDate()
+            );
+            if (existingDailyDataBrand) {
+                existingDailyDataBrand.salesTotal += productDoc.price * productDoc.quantity;
+                existingDailyDataBrand.salesUnits += productDoc.quantity;
+                existingDailyDataBrand.transactionNumbers += 1; // Update transactionNumbers
+            } else {
+                brand.dailyData.push({
+                    day,
+                    salesTotal: productDoc.price * productDoc.quantity,
+                    salesUnits: productDoc.quantity,
+                    transactionNumbers: 1, // Initialize transactionNumbers
+                });
+            }
+
+            // Update monthlyData
+            const monthIndexBrand = brand.monthlyData.findIndex((data) =>
+                data.year === day.getFullYear() && data.month === day.getMonth()
+            );
+            if (monthIndexBrand !== -1) {
+                brand.monthlyData[monthIndexBrand].salesTotal += productDoc.price * productDoc.quantity;
+                brand.monthlyData[monthIndexBrand].salesUnits += productDoc.quantity;
+                brand.monthlyData[monthIndexBrand].transactionNumbers += 1;
+            } else {
+                brand.monthlyData.push({
+                    year: day.getFullYear(),
+                    month: day.getMonth(),
+                    salesTotal: productDoc.price * productDoc.quantity,
+                    salesUnits: productDoc.quantity,
+                    transactionNumbers: 1,
+                });
+            }
+
+            await brand.save();
+
+
         }
-        await newTransaction.save(); 
-        res.status(201).json({newTransaction, productDocs});
+
+        //await newTransaction.save();  
+        res.status(201).json({ newTransaction, productDocs });
     } catch (error) {
         console.log(error);
         res.status(404).json({
@@ -226,3 +319,64 @@ export const postTransaction = async (req, res) => {
         });
     }
 };
+
+export const getCategories = async (req, res) => {
+    try {
+        const categories = await Category.find();
+        res.status(200).json(categories);
+    } catch (error) {
+        console.log(error);
+        res.status(404).json({
+            message: error.message,
+        });
+    }
+};
+
+export const getBrands = async (req, res) => {
+    try {
+        const brands = await Brand.find();
+        res.status(200).json(brands);
+    } catch (error) {
+        console.log(error);
+        res.status(404).json({
+            message: error.message,
+        });
+    }
+};
+
+/*debug router*/
+
+export const resetDailDataCategory = async (req, res) => {
+    try {
+        const category = await Category.find();
+        category.forEach(async (cat) => {
+            cat.dailyData = [];
+            cat.monthlyData = [];
+            cat.save();
+        });
+        res.status(200).json(category);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(404).json({
+            message: error.message,
+        });
+    }
+}
+export const resetDataBrand = async (req, res) => {
+    try {
+        const brand = await Brand.find();
+        brand.forEach(async (brand) => {
+            brand.dailyData = [];
+            brand.monthlyData = [];
+            brand.save();
+        });
+        res.status(200).json(brand);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(404).json({
+            message: error.message,
+        });
+    }
+}

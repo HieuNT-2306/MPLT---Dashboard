@@ -15,12 +15,15 @@ const CategorySchema = mongoose.Schema({
         },
         salesTotal: {
             type: Number,
+            default: 0,
         },
         salesUnits: {
             type: Number,
+            default: 0,
         },
         transactionNumbers: {
             type: Number,
+            default: 0,
         }
     }],
     dailyData: [{
@@ -29,12 +32,15 @@ const CategorySchema = mongoose.Schema({
         },
         salesTotal: {
             type: Number,
+            default: 0,
         },
         salesUnits: {
             type: Number,
+            default: 0,
         },
         transactionNumbers: {
             type: Number,
+            default: 0,
         }
     }]
 }, {timestamps: true});
