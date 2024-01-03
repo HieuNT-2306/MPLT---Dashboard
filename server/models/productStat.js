@@ -7,11 +7,11 @@ const ProductStatSchema = mongoose.Schema({
     },
     yearlySalesTotal: {
         type: Number, 
-        required: true,
+        default: 0
     },
     yearlySalesUnits:{
         type: Number, 
-        required: true,
+        default: 0
     },
     year:{
         type: Number,

@@ -11,6 +11,9 @@ const OverallStatSchema = mongoose.Schema({
         },
         salesUnits: {
             type: Number,
+        },
+        transactionNumbers: {
+            type: Number,
         }
     }],
     dailyData: [{
@@ -21,6 +24,9 @@ const OverallStatSchema = mongoose.Schema({
             type: Number,
         },
         salesUnits: {
+            type: Number,
+        },
+        transactionNumbers: {
             type: Number,
         }
     }],

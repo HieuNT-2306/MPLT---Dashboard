@@ -1,5 +1,6 @@
 import Brand from "../models/brand.js";
 import Category from "../models/category.js";
+import OverallStat from "../models/overallStat.js";
 import Product from "../models/product.js";
 import ProductStat from "../models/productStat.js";
 import Transaction from "../models/transaction.js";
@@ -84,8 +85,13 @@ export const getTransactions = async (req, res) => {
 export const postProducts = async (req, res) => {
     try {
         const { name, description, price, category, supply, brand } = req.body;
+        const priceHistory = [
+            {
+                price, date: new Date()
+            }
+        ]
         const newProduct = new Product({
-            name, description, price, category, supply, brand
+            name, description, price, category, supply, brand, priceHistory
         });
         await newProduct.save();
         const newProductStat = new ProductStat({
@@ -116,11 +122,17 @@ export const updateProduct = async (req, res) => {
         if (!product) {
             return res.status(404).json({ message: 'Product not found' });
         }
-        product.name = name;
-        product.price = price;
-        product.description = description;
-        product.category = category;
-        product.supply = supply;
+        if (name) product.name = name;
+        if (price) {
+            product.priceHistory.push({
+                price: price,
+                date: new Date(),
+            });
+            product.price = price;
+        }
+        if (description) product.description = description;
+        if (category) product.category = category;
+        if (supply) product.supply = supply;
 
         const updatedProduct = await product.save();
 
@@ -207,16 +219,22 @@ export const postTransaction = async (req, res) => {
             cost: totalCost,
             numberOfProducts,
         });
-        // const user = await User.findByIdAndUpdate(userId, {
-        //     $inc: {
-        //       purchasevalue: totalCost,
-        //       purchaseamount: numberOfProducts,
-        //     },
-        //   }, { new: true });
-        // if (!user) {
-        //     return res.status(404).json({ message: "User not found" });
-        // }
+        const day = new Date();
 
+        // Update user purchasevalue and purchaseamount
+
+        const user = await User.findByIdAndUpdate(userId, {
+            $inc: {
+              purchasevalue: totalCost,
+              purchaseamount: numberOfProducts,
+            },
+          }, { new: true });
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+
+        // Update product supply
         for (const productDoc of productDocs) {
             const category = await Category.findById(productDoc.category);
             if (!category) {
@@ -226,7 +244,6 @@ export const postTransaction = async (req, res) => {
             if (!brand) {
                 throw new Error(`Brand not found: ${productDoc.brand}`);
             }
-            const day = new Date();
 
             //Category
             const existingDailyData = category.dailyData.find((data) =>
@@ -307,10 +324,75 @@ export const postTransaction = async (req, res) => {
 
             await brand.save();
 
-
+            const productStat = await ProductStat.findOneAndUpdate(
+                { productId: productDoc._id, year: day.getFullYear() },
+                {
+                    $inc: {
+                        yearlySalesTotal: productDoc.price * productDoc.quantity,
+                        yearlySalesUnits: productDoc.quantity,
+                    },
+                },
+                { new: true }
+            );
+        
+            if (!productStat) {
+                productStat = new ProductStat({
+                    productId: productDoc._id,
+                    yearlySalesTotal: productDoc.price * productDoc.quantity,
+                    yearlySalesUnits: productDoc.quantity,
+                    year: day.getFullYear(),
+                });
+                await productStat.save();
+            }
+        }
+        //update the overallstat
+        let overallStat = await OverallStat.findOne({ year: day.getFullYear() });
+        if (!overallStat) {
+            overallStat = new OverallStat({
+                year: day.getFullYear(),
+                monthlyData: [],
+                dailyData: [],
+            })
+        }
+        const existingDailyDataOverall = overallStat.dailyData.find((data) => data.day &&
+            data.day.getFullYear() === day.getFullYear() &&
+            data.day.getMonth() === day.getMonth() &&
+            data.day.getDate() === day.getDate()
+        );
+        if (existingDailyDataOverall) {
+            existingDailyDataOverall.salesTotal += totalCost;
+            existingDailyDataOverall.salesUnits += numberOfProducts;
+            existingDailyDataOverall.transactionNumbers += 1; // Update transactionNumbers
+        } else {
+            overallStat.dailyData.push({
+                day,
+                salesTotal: totalCost,
+                salesUnits: numberOfProducts,
+                transactionNumbers: 1, // Initialize transactionNumbers
+            });
         }
 
-        //await newTransaction.save();  
+        const existingMonthlyDataOverall = overallStat.monthlyData.find((data) =>
+            data.month === day.getMonth()
+        );
+        if (existingMonthlyDataOverall) {
+            existingMonthlyDataOverall.salesTotal += totalCost;
+            existingMonthlyDataOverall.salesUnits += numberOfProducts;
+            existingMonthlyDataOverall.transactionNumbers += 1;
+        }
+        else {
+            overallStat.monthlyData.push({
+                year: day.getFullYear(),
+                month: day.getMonth(),
+                salesTotal: totalCost,
+                salesUnits: numberOfProducts,
+                transactionNumbers: 1,
+            });
+        }
+        await overallStat.save();
+
+
+        await newTransaction.save();  
         res.status(201).json({ newTransaction, productDocs });
     } catch (error) {
         console.log(error);

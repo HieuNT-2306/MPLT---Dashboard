@@ -26,6 +26,14 @@ const ProductSchema = mongoose.Schema({
         type: Number,
         required: true
     },
+    priceHistory: [{
+        price: {
+            type: Number,
+        },
+        date: {
+            type: Date,
+        }
+    }],
 }, {timestamps: true});
 
 const Product = mongoose.model('Product', ProductSchema);  // User is the name of the model

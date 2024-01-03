@@ -22,9 +22,12 @@ export const getSalesByYear = async (req, res) => {
             dailyData,
         } = overallStat[0];
         const category = await Category.find();
+        const brands = await Brand.find();
 
         const salesByCategory = {};
         const unitsByCategory = {};
+        const salesByBrand = {};
+        const unitsByBrand = {};
         let yearlySalesTotal = 0;
         let yearlyTotalSoldUnit = 0;
 
@@ -42,6 +45,16 @@ export const getSalesByYear = async (req, res) => {
                 yearlyTotalSoldUnit += categoryUnits;
               }
         }
+        for (const brand of brands) {
+            const matchingMonthlyData = brand.monthlyData.filter((data) => data.year === parseInt(yearParams));
+            if (matchingMonthlyData.length > 0) {
+                const brandSales = matchingMonthlyData.reduce((total, data) => total + data.salesTotal, 0);
+                const brandUnits = matchingMonthlyData.reduce((total, data) => total + data.salesUnits, 0);
+        
+                salesByBrand[brand.name] = brandSales;
+                unitsByBrand[brand.name] = brandUnits;
+              }
+        }
         const transactions = await Transaction.find({ createdAt: { $gte: new Date(yearParams, 0, 1), $lt: new Date(yearParams + 1, 0, 1) } });
         const totalCustomer = transactions.length;
 
@@ -49,13 +62,27 @@ export const getSalesByYear = async (req, res) => {
             totalCustomer,
             yearlySalesTotal,
             yearlyTotalSoldUnit,
-            totalCustomer,
-            monthlyData,    
+            monthlyData,
             dailyData,
             salesByCategory,
             unitsByCategory,
+            salesByBrand,
+            unitsByBrand
         });
     } catch (error) {
         res.status(404).json({ message: error.message });
     }
 };
+
+export const resetOverallStat = async (req, res) => {
+    try {
+        const { yearParams } = req.params;
+        const overallStat = await OverallStat.find({ year: parseInt(yearParams) });
+        overallStat[0].monthlyData = [];
+        overallStat[0].dailyData = [];
+        await overallStat[0].save();
+        res.status(200).json(overallStat[0]);
+    } catch (error) {
+        res.status(404).json({ message: error.message });
+    }
+}
