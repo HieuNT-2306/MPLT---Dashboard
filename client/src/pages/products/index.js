@@ -49,7 +49,7 @@ const Product = ({
                 <Typography sx={{
                     marginBottom: "1.5rem"
                 }} color={theme.palette.secondary[400]}>
-                    {Number(price).toFixed(0)}VND
+                    {(price).toLocaleString('vi-VN', {style : 'currency', currency : 'VND'})}
                 </Typography>
                 <Typography variant="body2">
                     {description}
@@ -87,7 +87,7 @@ const Product = ({
                         Số lượng bán năm nay: {productStat[0].yearlySalesUnits} sản phẩm
                     </Typography>
                     <Typography >
-                        Doanh số bán năm nay: {productStat[0].yearlySalesTotal} VNĐ
+                        Doanh số bán năm nay: {(productStat[0].yearlySalesTotal).toLocaleString('vi-VN', {style : 'currency', currency : 'VND'})}
                     </Typography>
                 </CardContent>
             </Collapse>

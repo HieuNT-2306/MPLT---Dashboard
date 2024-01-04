@@ -225,10 +225,10 @@ export const postTransaction = async (req, res) => {
 
         const user = await User.findByIdAndUpdate(userId, {
             $inc: {
-              purchasevalue: totalCost,
-              purchaseamount: numberOfProducts,
+                purchasevalue: totalCost,
+                purchaseamount: numberOfProducts,
             },
-          }, { new: true });
+        }, { new: true });
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
@@ -334,7 +334,7 @@ export const postTransaction = async (req, res) => {
                 },
                 { new: true }
             );
-        
+
             if (!productStat) {
                 productStat = new ProductStat({
                     productId: productDoc._id,
@@ -392,7 +392,7 @@ export const postTransaction = async (req, res) => {
         await overallStat.save();
 
 
-        await newTransaction.save();  
+        await newTransaction.save();
         res.status(201).json({ newTransaction, productDocs });
     } catch (error) {
         console.log(error);
@@ -402,29 +402,26 @@ export const postTransaction = async (req, res) => {
     }
 };
 
-export const getCategories = async (req, res) => {
+export const deleteProduct = async (req, res) => {
     try {
-        const categories = await Category.find();
-        res.status(200).json(categories);
-    } catch (error) {
-        console.log(error);
-        res.status(404).json({
-            message: error.message,
+        const { id } = req.params;
+        const product = await Product.findById(id);
+        const productStat = await ProductStat.findOne({ productId: id });
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+        await product.deleteOne({ _id: id });
+        await productStat.deleteOne({ productId: id });
+        res.json({
+            message: 'Product deleted successfully',
+            product,
+            productStat
         });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
 };
 
-export const getBrands = async (req, res) => {
-    try {
-        const brands = await Brand.find();
-        res.status(200).json(brands);
-    } catch (error) {
-        console.log(error);
-        res.status(404).json({
-            message: error.message,
-        });
-    }
-};
 
 /*debug router*/
 
