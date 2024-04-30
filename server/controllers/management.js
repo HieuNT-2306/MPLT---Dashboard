@@ -26,37 +26,37 @@ export const updateCategory = async (req, res) => {
         }
 
         if (name) category.name = name;
+        // Debug
+        // Update dailyData 
+        // if (dailyData) {
+        //     const day = new Date(dailyData.day);
+        //     const index = category.dailyData.findIndex((data) =>
+        //         data.day.getFullYear() === day.getFullYear() &&
+        //         data.day.getMonth() === day.getMonth() &&
+        //         data.day.getDate() === day.getDate()
+        //     );
+        //     if (index !== -1) {
+        //         category.dailyData[index].salesTotal += dailyData.salesTotal;
+        //         category.dailyData[index].salesUnits += dailyData.salesUnits;
+        //     } else {
+        //         category.dailyData.push(dailyData);
+        //     }
 
-        // Update dailyData
-        if (dailyData) {
-            const day = new Date(dailyData.day);
-            const index = category.dailyData.findIndex((data) =>
-                data.day.getFullYear() === day.getFullYear() &&
-                data.day.getMonth() === day.getMonth() &&
-                data.day.getDate() === day.getDate()
-            );
-            if (index !== -1) {
-                category.dailyData[index].salesTotal += dailyData.salesTotal;
-                category.dailyData[index].salesUnits += dailyData.salesUnits;
-            } else {
-                category.dailyData.push(dailyData);
-            }
-
-            // Update monthlyData
-            const monthIndex = category.monthlyData.findIndex(data => data.year === day.getFullYear() && data.month === day.getMonth());
-            if (monthIndex !== -1) {
-                category.monthlyData[monthIndex].salesTotal += dailyData.salesTotal;
-                category.monthlyData[monthIndex].salesUnits += dailyData.salesUnits;
-            } else {
-                category.monthlyData.push({
-                    year: day.getFullYear(),
-                    month: day.getMonth(),
-                    salesTotal: dailyData.salesTotal,
-                    salesUnits: dailyData.salesUnits
-                });
-            }
-        }
-
+        //     // Update monthlyData
+        //     const monthIndex = category.monthlyData.findIndex(data => data.year === day.getFullYear() && data.month === day.getMonth());
+        //     if (monthIndex !== -1) {
+        //         category.monthlyData[monthIndex].salesTotal += dailyData.salesTotal;
+        //         category.monthlyData[monthIndex].salesUnits += dailyData.salesUnits;
+        //     } else {
+        //         category.monthlyData.push({
+        //             year: day.getFullYear(),
+        //             month: day.getMonth(),
+        //             salesTotal: dailyData.salesTotal,
+        //             salesUnits: dailyData.salesUnits
+        //         });
+        //     }
+        // }
+        // End debug
         const updatedCategory = await category.save();
 
         res.json(updatedCategory);
@@ -90,34 +90,38 @@ export const updateBrand = async (req, res) => {
         }
 
         if (name) brand.name = name;
-        if (dailyData) {
-            const day = new Date(dailyData.day);
-            const index = brand.dailyData.findIndex((data) =>
-                data.day.getFullYear() === day.getFullYear() &&
-                data.day.getMonth() === day.getMonth() &&
-                data.day.getDate() === day.getDate()
-            );
-            if (index !== -1) {
-                brand.dailyData[index].salesTotal += dailyData.salesTotal;
-                brand.dailyData[index].salesUnits += dailyData.salesUnits;
-            } else {
-                brand.dailyData.push(dailyData);
-            }
 
-            // Update monthlyData
-            const monthIndex = brand.monthlyData.findIndex(data => data.year === day.getFullYear() && data.month === day.getMonth());
-            if (monthIndex !== -1) {
-                brand.monthlyData[monthIndex].salesTotal += dailyData.salesTotal;
-                brand.monthlyData[monthIndex].salesUnits += dailyData.salesUnits;
-            } else {
-                brand.monthlyData.push({
-                    year: day.getFullYear(),
-                    month: day.getMonth(),
-                    salesTotal: dailyData.salesTotal,
-                    salesUnits: dailyData.salesUnits
-                });
-            }
-        }
+        // Debug
+        // if (dailyData) {
+        //     const day = new Date(dailyData.day);
+        //     const index = brand.dailyData.findIndex((data) =>
+        //         data.day.getFullYear() === day.getFullYear() &&
+        //         data.day.getMonth() === day.getMonth() &&
+        //         data.day.getDate() === day.getDate()
+        //     );
+        //     if (index !== -1) {
+        //         brand.dailyData[index].salesTotal += dailyData.salesTotal;
+        //         brand.dailyData[index].salesUnits += dailyData.salesUnits;
+        //     } else {
+        //         brand.dailyData.push(dailyData);
+        //     }
+
+        //     // Update monthlyData
+        //     const monthIndex = brand.monthlyData.findIndex(data => data.year === day.getFullYear() && data.month === day.getMonth());
+        //     if (monthIndex !== -1) {
+        //         brand.monthlyData[monthIndex].salesTotal += dailyData.salesTotal;
+        //         brand.monthlyData[monthIndex].salesUnits += dailyData.salesUnits;
+        //     } else {
+        //         brand.monthlyData.push({
+        //             year: day.getFullYear(),
+        //             month: day.getMonth(),
+        //             salesTotal: dailyData.salesTotal,
+        //             salesUnits: dailyData.salesUnits
+        //         });
+        //     }
+        // }
+        // End debug
+        
         const updatedBrand = await brand.save();
 
         res.json(updatedBrand);

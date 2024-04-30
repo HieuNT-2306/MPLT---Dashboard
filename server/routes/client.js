@@ -1,5 +1,5 @@
 import express from 'express';
-import {   deleteProduct, getCustomers, postCustomer, postTransaction, resetDailDataCategory, resetDataBrand } from '../controllers/client.js';
+import {  deleteProduct, getCustomers, postCustomer, postTransaction, resetDailDataCategory, resetDataBrand, updateCustomer } from '../controllers/client.js';
 import { getProducts } from '../controllers/client.js';
 import { getTransactions } from '../controllers/client.js';
 import { postProducts, updateProduct } from '../controllers/client.js';
@@ -13,7 +13,9 @@ router.post("/post/products", postProducts);
 router.post("/post/customer", postCustomer);
 router.post("/post/transaction", postTransaction);
 router.post("/update/products/:id", updateProduct);
-router.delete(" :id", deleteProduct);
+router.post("/update/customer/:id", updateCustomer);
+router.delete(":id", deleteProduct);
+
 /*debug*/
 router.post("/debug/category", resetDailDataCategory);
 router.post("/debug/brand", resetDataBrand);

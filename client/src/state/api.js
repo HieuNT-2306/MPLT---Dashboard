@@ -1,3 +1,4 @@
+import { create } from '@mui/material/styles/createTransitions';
 import {createApi, fetchBaseQuery} from '@reduxjs/toolkit/query/react'
 
 export const api = createApi({ 
@@ -8,6 +9,14 @@ export const api = createApi({
         getUser: builder.query({
             query: (id) => `general/user/${id}`,
             providesTags: ['User']
+        }),
+        createCustomer: builder.mutation({
+            query: (userData) => ({
+                url: 'client/post/customer',
+                method: 'POST',
+                body: userData
+            }),
+            invalidatesTags: ['User']
         }),
         getProducts: builder.query({
             query: () => 'client/products',
@@ -47,5 +56,6 @@ export const {
     useGetCustomersQuery,
     useGetTransactionsQuery,
     useGetSalesQuery,
-    useGetDashboardStatsQuery
+    useGetDashboardStatsQuery,
+    useCreateCustomerMutation,
 } = api;

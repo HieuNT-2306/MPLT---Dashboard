@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-
+//Only use for debugging
 const OverallStatSchema = mongoose.Schema({
     year: Number,
     monthlyData: [{
@@ -32,5 +32,5 @@ const OverallStatSchema = mongoose.Schema({
     }],
 }, { timestamps: true });
 
-const OverallStat = mongoose.model('OverallStat', OverallStatSchema);  // User is the name of the model
+const OverallStat = mongoose.model('OverallStat', OverallStatSchema);
 export default OverallStat; 

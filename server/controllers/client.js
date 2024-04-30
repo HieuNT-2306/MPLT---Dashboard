@@ -169,12 +169,12 @@ export const updateCustomer = async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-        user.name = name;
-        user.email = email;
-        user.phonenumber = phonenumber;
-        user.address = address;
-        user.purchasevalue = purchasevalue;
-        user.purchaseamount = purchaseamount;
+        if (name) user.name = name;
+        if (email) user.email = email;
+        if (phonenumber) user.phonenumber = phonenumber;
+        if (address) user.address = address;
+        if (purchasevalue) user.purchasevalue = purchasevalue;
+        if (purchaseamount)     user.purchaseamount = purchaseamount;
 
         const updatedUser = await user.save();
 
@@ -421,6 +421,22 @@ export const deleteProduct = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+export const deleteCustomer = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        await user.deleteOne({ _id: id });
+        res.json({ message: 'User deleted successfully', user });
+    }
+    catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+
 
 
 /*debug router*/

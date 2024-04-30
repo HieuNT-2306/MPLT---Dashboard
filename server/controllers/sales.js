@@ -3,15 +3,6 @@ import Category from "../models/category.js";
 import OverallStat from "../models/overallStat.js";
 import Transaction from "../models/transaction.js";
 
-export const getSales = async (req, res) => {
-    try {
-        const overallStat = await OverallStat.find();
-        res.status(200).json(overallStat[0]);
-    } catch (error) {
-        res.status(404).json({ message: error.message });
-    }
-}
-
 export const getSalesByYear = async (req, res) => {
     try {
         const { yearParams } = req.params;
@@ -73,7 +64,7 @@ export const getSalesByYear = async (req, res) => {
         res.status(404).json({ message: error.message });
     }
 };
-
+// Debug
 export const resetOverallStat = async (req, res) => {
     try {
         const { yearParams } = req.params;
@@ -81,6 +72,14 @@ export const resetOverallStat = async (req, res) => {
         overallStat[0].monthlyData = [];
         overallStat[0].dailyData = [];
         await overallStat[0].save();
+        res.status(200).json(overallStat[0]);
+    } catch (error) {
+        res.status(404).json({ message: error.message });
+    }
+}
+export const getSales = async (req, res) => {
+    try {
+        const overallStat = await OverallStat.find();
         res.status(200).json(overallStat[0]);
     } catch (error) {
         res.status(404).json({ message: error.message });

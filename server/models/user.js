@@ -10,9 +10,6 @@ const UserSchema = mongoose.Schema({
         unique: true,
         email: true
     },
-    password: {
-        type: String, 
-    },
     address: {
         type: String,
     },
@@ -22,8 +19,8 @@ const UserSchema = mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['user', 'admin'],
-        default: 'admin'
+        enum: ['user', 'admin', 'customer'],
+        default: 'user'
     },
     purchasevalue: {
         type: Number,

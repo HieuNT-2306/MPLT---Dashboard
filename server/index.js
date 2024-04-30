@@ -10,13 +10,6 @@ import generalRoutes from './routes/general.js';
 import managementRoutes from './routes/management.js';
 import salesRoutes from './routes/sales.js';
 
-import User from './models/user.js';
-import Product from './models/product.js';
-import ProductStat from './models/productStat.js';
-import Transaction from './models/transaction.js';
-import { dataProduct, dataProductStat, dataTransaction, dataStat } from './data/index.js';
-import OverallStat from './models/overallStat.js';
-
 
 dotenv.config();
 const app = express();
@@ -39,6 +32,5 @@ const PORT = process.env.PORT || 5000;
 mongoose.connect(process.env.MONGO_URL)
     .then(() => {
         app.listen(PORT, () => console.log(`Server running on port: ${PORT}`));
-        //OverallStat.insertMany(dataStat);
     })
     .catch((error) => console.log(`${error.message} did not connect`));
