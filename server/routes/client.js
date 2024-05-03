@@ -14,7 +14,8 @@ router.post("/post/customer", postCustomer);
 router.post("/post/transaction", postTransaction);
 router.post("/update/products/:id", updateProduct);
 router.post("/update/customer/:id", updateCustomer);
-router.delete(":id", deleteProduct);
+router.delete("/delete/product/:id", deleteProduct);
+router.delete("/delete/customer/:id", deleteProduct);
 
 /*debug*/
 router.post("/debug/category", resetDailDataCategory);

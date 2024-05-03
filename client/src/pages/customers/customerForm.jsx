@@ -2,16 +2,13 @@ import React, { useState } from 'react'
 import { Box, useTheme, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material'
 import { useCreateCustomerMutation } from 'state/api';
 
-
 const CustomerForm = (
-    name,
-    email,
-    phonenumber,
-    address,
+  customerinitData
 ) => {
   const theme = useTheme();
   const [open, setOpen] = useState(false);
-  const [customerData, setCustomerData] = useState({ name, email, phonenumber, address}); 
+  const [customerData, setCustomerData] = useState(customerinitData);
+  console.log("customerData", customerData); 
   const [createUser, { isLoading, error }] = useCreateCustomerMutation();
   const handleSubmitAdd = async () => {
     try {
@@ -92,4 +89,4 @@ const CustomerForm = (
   )
 }
 
-export default CustomerForm
+export default CustomerForm 
