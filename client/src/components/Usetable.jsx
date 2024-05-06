@@ -7,11 +7,13 @@ export default function Usetable(data, headCells, filterFn) {
     table: {
       marginTop: "1rem",
       "& thead th": {
+        padding: "8px",
         fontWeight: "600",
         backgroundColor: theme.palette.primary.light,
         color: theme.palette.secondary[100]
       },
       "& tbody td": {
+        padding: "4px",
         fontWeight: "300"
       },
       "& tbody tr:hover": {
@@ -21,7 +23,7 @@ export default function Usetable(data, headCells, filterFn) {
     }
   };
   const pages = [5, 10, 25];
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(pages[page]);
   const [order, setOrder] = useState();
   const [orderBy, setOrderBy] = useState();
@@ -94,7 +96,16 @@ export default function Usetable(data, headCells, filterFn) {
     return 0;
   }
   const dataAfterPagingAndSorting = () => {
-    return stableSort(filterFn.fn(data), getComparator(order, orderBy)).slice(page * rowsPerPage, (page + 1) * rowsPerPage);
+    console.log("data from page:", data);
+    console.log("filterFn:", filterFn);
+    let filterData = stableSort(filterFn.fn(data), getComparator(order, orderBy));
+    if (filterData.length < rowsPerPage) {
+      return filterData;
+    }
+    else {
+      return filterData.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
+    }
+    //return stableSort(filterFn.fn(data), getComparator(order, orderBy)).slice(page * rowsPerPage, (page + 1) * rowsPerPage);
   }
 
   const TblPagination = () => (<TablePagination

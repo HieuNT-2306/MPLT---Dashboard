@@ -2,9 +2,6 @@ import React, { useState } from 'react'
 import { Box, Input, InputAdornment, Paper, TableBody, TableCell, TableRow, Toolbar, useTheme } from '@mui/material'
 import { useCreateCustomerMutation, useDeleteCustomerMutation, useGetCustomersQuery } from 'state/api'
 import Header from 'components/Header'
-import { DataGrid, viVN } from '@mui/x-data-grid'
-import DataGridCustomToolbar from 'components/DataGridCustomToolbar'
-import CustomerForm from './customerForm'
 import CustomerFormTest from './customerFormTest'
 import Usetable from 'components/Usetable'
 import CustomInput from 'components/controls/CustomInput'
@@ -12,6 +9,8 @@ import { Add, Delete, Edit, Search } from '@mui/icons-material'
 import CustomButton from 'components/controls/CustomButton'
 import Popup from 'components/Popup'
 import ActionButton from 'components/controls/ActionButton'
+import Notification from 'components/Notification'
+import ConfirmDialog from 'components/ConfirmDialog'
 
 const headCells = [
     { id: 'name', label: 'Tên' },
@@ -20,21 +19,21 @@ const headCells = [
     { id: 'address', label: 'Địa chỉ' },
     { id: 'purchasevalue', label: 'Số tiền mua hàng' },
     { id: 'purchaseamount', label: 'Số lần mua hàng' },
-    { id: 'createdAt', label: 'Ngày tạo', disableSorting: false },
-    { id: 'actions', label: 'Actions', disableSorting: true },
+    { id: 'createdAt', label: 'Ngày tạo'},
+    { id: 'actions', label: 'Thao tác', disableSorting: true },
 ];
 
 const Customers = () => {
     const theme = useTheme();
     const { data } = useGetCustomersQuery();
+    
     const [dataForEdit, setDataForEdit] = useState(null);
     const [createUser, { isLoading, error }] = useCreateCustomerMutation();
     const [deleteUser, { isLoading: isDeleting, error: deleteError }] = useDeleteCustomerMutation();
     const [filterFn, setFilterFn] = useState({ fn: items => { return items; } });
     const [openPopup, setOpenPopup] = useState(false);
-    // const [open, setOpen] = useState(false);
-    // const [customerData, setCustomerData] = useState({ name: '', email: '', phonenumber: '', address: '' });
-
+    const [notify, setNotify] = useState({ isOpen: false, message: '', type: '' });
+    const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, title: '', subTitle: '' });
     const {
         TblContainer,
         TblHead,
@@ -56,50 +55,44 @@ const Customers = () => {
     
     const addOrEdit = (customer, resetForm) => {
         console.log("customer", customer);
-
-        //them truong hop edit customer
-
         createUser(customer);
         resetForm();
         setOpenPopup(false);
+        if (customer._id) {
+            setNotify({
+                isOpen: true,
+                message: 'Sửa thông tin khách hàng thành công',
+                type: 'success'
+            });
+        }
+        else  {
+            setNotify({
+                isOpen: true,
+                message: 'Thêm khách hàng thành công',
+                type: 'success'
+            });
+        }
     }
     const openInPopup = (customer) => {
         console.log("customer for editing:", customer);
         setDataForEdit(customer);
         setOpenPopup(true);
     }
+    const onDelete = (id) => {
+        setConfirmDialog({ ...confirmDialog, isOpen: false});
+        console.log("id", id);
+        deleteUser(id);
+        setNotify({
+            isOpen: true,
+            message: 'Xóa khách hàng thành công',
+            type: 'error'
+        });
+    }
 
-    //console.log("customer", data);
 
-    const columns = [
-        { field: 'name', headerName: 'Tên', flex: 1 },
-        { field: 'email', headerName: 'Email', flex: 1 },
-        { field: 'phonenumber', headerName: 'Số điện thoại', flex: 1 },
-        { field: 'address', headerName: 'Địa chỉ', flex: 1 },
-        {
-            field: 'purchasevalue', headerName: 'Số tiền mua hàng', flex: 1,
-            renderCell: (params) => {
-                return (
-                    <span>{params.value.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</span>
-                )
-            }
-        },
-        { field: 'purchaseamount', headerName: 'Số lần mua hàng', flex: 1 },
-        {
-            field: 'createdAt', headerName: 'Ngày tạo', flex: 0.8,
-            renderCell: (params) => {
-                return (
-                    <span>{new Date(params.value).toLocaleDateString('vi-VN')}</span>
-                )
-            }
-        },
-    ];
     return (
         <Box m="0.5rem 1.5rem">
             <Header title="Khách hàng" subTitle="Danh sách khách hàng" />
-            {/* <CustomerForm 
-                customerinitData={{ name: 'Hello', email: 'helo123@gmail.com', phonenumber: '0123456789', address: '122332211ggdge' }}
-            /> */}
             <Box
                 margin={1}
                 sx={{
@@ -162,6 +155,16 @@ const Customers = () => {
                                         <ActionButton
                                             variant="outlined"
                                             color="secondary"
+                                            onClick={() => {
+                                                console.log("row._id", row._id);
+                                                setConfirmDialog({
+                                                    isOpen: true,
+                                                    title: `Bạn chắc chắn muốn xóa khách hàng ${row.name} không?`,
+                                                    subTitle: 'Bạn không thể hoàn tác hành động này',
+                                                    onConfirm: () => {onDelete(row._id)}
+                                                })
+                                                //onDelete(row._id)
+                                            }}
                                         >
                                             <Delete/>
                                         </ActionButton>
@@ -173,7 +176,7 @@ const Customers = () => {
                 </TblContainer>
                 <TblPagination />
                 <Popup
-                    title="Thêm khách hàng"
+                    title="Thêm / sửa khách hàng"
                     openPopup={openPopup}
                     setOpenPopup={setOpenPopup}
                 >
@@ -182,17 +185,14 @@ const Customers = () => {
                         addOrEdit={addOrEdit}
                     />
                 </Popup>
-                {/* {
-                        data ? <DataGrid
-                            loading={!data}
-                            getRowId={(row) => row._id}
-                            rows={data || []}
-                            columns={columns}
-                            slots={{ toolbar: DataGridCustomToolbar }}
-                            density='compact'
-                            localeText={viVN.components.MuiDataGrid.defaultProps.localeText}
-                        /> : <h1>Đang tải...</h1>
-                    } */}
+                <Notification 
+                    notify={notify}
+                    setNotify={setNotify}
+                />
+                <ConfirmDialog 
+                    confirmDialog={confirmDialog}
+                    setConfirmDialog={setConfirmDialog}
+                />
             </Box>
         </Box>
     )

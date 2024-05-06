@@ -12,7 +12,7 @@ export const api = createApi({
         }),
         createCustomer: builder.mutation({
             query: (userData) => ({
-                url: 'client/post/customer',
+                url: `client/post/customer`,
                 method: 'POST',
                 body: userData
             }),

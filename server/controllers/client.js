@@ -70,10 +70,7 @@ export const getTransactions = async (req, res) => {
             name: { $regex: search, $options: "i" }
         });
 
-        res.status(200).json({
-            transactions,
-            total
-        });
+        res.status(200).json(transactions);
     } catch (error) {
         console.log(error);
         res.status(404).json({
@@ -144,43 +141,38 @@ export const updateProduct = async (req, res) => {
 
 export const postCustomer = async (req, res) => {
     try {
-        const { name, email, phonenumber, address, password, purchasevalue, purchaseamount } = req.body;
-        const newUser = new User({
-            name, email, phonenumber, password, address, purchasevalue, purchaseamount,
-            role: "user",
-        });
-        await newUser.save();
-        res.status(201).json(newUser);
+        const { _id, name, email, phonenumber, address, password, purchasevalue, purchaseamount } = req.body;
+        console.log(req.body)
+        if (!_id) {
+            console.log("new user");
+            const newUser = new User({
+                name, email, phonenumber, password, address, purchasevalue, purchaseamount,
+                role: "user",
+            });
+            await newUser.save();
+            res.status(201).json({newUser});
+        }
+        else {
+            console.log("update user");
+            const user = await User.findById(_id);
+            if (!user) {
+                return res.status(404).json({ message: 'User not found' });
+            }
+            if (name) user.name = name;
+            if (email) user.email = email;
+            if (phonenumber) user.phonenumber = phonenumber;
+            if (address) user.address = address;
+            if (purchasevalue) user.purchasevalue = purchasevalue;
+            if (purchaseamount) user.purchaseamount = purchaseamount;
+
+            const updatedUser = await user.save();
+            return res.json({ updatedUser });
+        }
     } catch (error) {
         console.log(error);
         res.status(404).json({
             message: error.message,
         });
-    }
-};
-
-export const updateCustomer = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { name, email, phonenumber, address, purchasevalue, purchaseamount } = req.body;
-
-        const user = await User.findById(id);
-
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-        if (name) user.name = name;
-        if (email) user.email = email;
-        if (phonenumber) user.phonenumber = phonenumber;
-        if (address) user.address = address;
-        if (purchasevalue) user.purchasevalue = purchasevalue;
-        if (purchaseamount)     user.purchaseamount = purchaseamount;
-
-        const updatedUser = await user.save();
-
-        res.json(updatedUser);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
     }
 };
 

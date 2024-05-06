@@ -62,7 +62,6 @@ export default function CustomerFormTest(props) {
         if (validate()) {
             //them api
             addOrEdit(values, resetForm);
-            window.alert("Gửi thành công");
         } else {
             window.alert("Gửi không thành công");
         }
