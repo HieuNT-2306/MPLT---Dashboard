@@ -4,7 +4,7 @@ import { Useform, FormCustom } from "components/Useform";
 import CustomButton from "components/controls/CustomButton";
 import CustomInput from "components/controls/CustomInput";
 import React, { useState, useEffect } from "react";
-import { useGetCustomersQuery, useGetProductsQuery } from "state/api";
+import { useGetCustomersQuery, useGetProductsQuery, usePostTransactionMutation } from "state/api";
 
 const initialValue = {
     userId: "",
@@ -24,7 +24,15 @@ export default function TransactionsForm(props) {
             email: customer.email
         }
     });
-
+    const { data: productData } = useGetProductsQuery();
+    console.log("Product data:", productData );
+    const productSuggestion = productData && productData.map((product) => {
+        return {
+            id: product._id,
+            name: product.name,
+            price: product.price
+        }
+    });
 
     const theme = useTheme();
 
@@ -64,13 +72,13 @@ export default function TransactionsForm(props) {
         handleInputChange
     } = Useform(initialValue, true, validate);
 
+    const handleSubmit = () => {
+
+    }
 
   return (
-    <FormCustom>
-        {
-            console.log(customerSuggestion)
-        }
-        Đây là 1 cái form custom.
+    <FormCustom onSubmit={handleSubmit}>
+        
     </FormCustom>
   )
 }

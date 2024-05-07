@@ -1,6 +1,6 @@
 import { Box, InputAdornment, Table, TableBody, TableCell, TableContainer, TableRow, Toolbar, useTheme } from '@mui/material';
 import React, { useState } from 'react';
-import { useGetCustomersQuery, useGetTransactionsQuery } from 'state/api';
+import { useGetCustomersQuery, useGetTransactionsQuery, usePostTransactionMutation } from 'state/api';
 import Header from 'components/Header';
 import CustomInput from 'components/controls/CustomInput';
 import { Add, Delete, Edit, Search } from '@mui/icons-material';
@@ -9,6 +9,7 @@ import Usetable from 'components/Usetable';
 import ActionButton from 'components/controls/ActionButton';
 import Popup from 'components/Popup';
 import TransactionsForm from './transactionsForm';
+import TransactionsFormTest from './transactionsFormTest';
 
 const headCells = [
     { id: 'userId.name', label: 'Tên khách hàng' },
@@ -28,9 +29,9 @@ const Transaction = () => {
     const [filterFn, setFilterFn] = useState({ fn: items => { return items; } });
     const [dataForEdit, setDataForEdit] = useState(null);
     const [openPopup, setOpenPopup] = useState(false);
-    const {data, isLoading} = useGetTransactionsQuery({ page, pageSize, sort: JSON.stringify(sort), search: "" });
-    const { customersData } = useGetCustomersQuery();
-    console.log("customer", customersData);
+    const {data } = useGetTransactionsQuery({ page, pageSize, sort: JSON.stringify(sort), search: "" });
+    const [postTransactions, { isLoading, error }] = usePostTransactionMutation();
+
 
     console.log("transaction", data);
     const {
@@ -39,6 +40,13 @@ const Transaction = () => {
         TblPagination,
         dataAfterPagingAndSorting,
     } = Usetable(data, headCells, filterFn);
+
+    const addOrEdit = (transaction, resetForm) => {
+        console.log(transaction);
+        postTransactions(transaction);
+        resetForm();
+        
+    }
     
     const handleSearch = (e) => {
         const target = e.target;
@@ -138,7 +146,11 @@ const Transaction = () => {
                 openPopup={openPopup}
                 setOpenPopup={setOpenPopup}
             >
-                <TransactionsForm />
+                {/* <TransactionsForm /> */}
+                <TransactionsFormTest
+                    dataForEdit={dataForEdit}
+                    addOrEdit={addOrEdit}
+                 />
             </Popup>
 
         </Box>
