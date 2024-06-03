@@ -5,6 +5,16 @@ import Product from "../models/product.js";
 import ProductStat from "../models/productStat.js";
 import Transaction from "../models/transaction.js";
 import User from "../models/user.js";
+import dotenv from 'dotenv';
+import cloudinary from 'cloudinary';
+import fs from 'fs';
+dotenv.config();
+
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 export const getProducts = async (req, res) => {
     try {
@@ -50,7 +60,7 @@ export const getCustomers = async (req, res) => {
 
 export const getTransactions = async (req, res) => {
     try {
-        const { page = 1, pageSize = 10, sort = null, search = "" } = req.query;
+        const { page = 1, pageSize = 20, sort = null, search = "" } = req.query;
         const generateSort = (sort) => {
             if (!sort) return {};
             const sortParsed = JSON.parse(sort);
@@ -62,9 +72,11 @@ export const getTransactions = async (req, res) => {
         const sortFormatted = Boolean(sort) ? generateSort(sort) : {};
         const transactions = await Transaction.find().populate({
             path: 'userId',
-            select: 'email name phonenumber -_id'
-        })
-            .sort(sortFormatted).limit(Number(pageSize)).skip((Number(page) - 1) * Number(pageSize));
+            select: 'email name phonenumber _id'
+        }).populate({
+            path: 'products.productId',
+            select: 'name price _id'
+        }).sort(sortFormatted);
 
         const total = await Transaction.countDocuments({
             name: { $regex: search, $options: "i" }
@@ -82,13 +94,22 @@ export const getTransactions = async (req, res) => {
 export const postProducts = async (req, res) => {
     try {
         const { name, description, price, category, supply, brand } = req.body;
+        let imgLink = "./temp/" + req.file.filename;
+        const uploadImgResult = await cloudinary.uploader.upload(imgLink, { resource_type: 'image' });
+        fs.unlink(imgLink, err => {
+            if (err) {
+                console.error(err);
+                return res.status(500).json({ message: err.message });
+            }
+        });
         const priceHistory = [
             {
                 price, date: new Date()
             }
         ]
         const newProduct = new Product({
-            name, description, price, category, supply, brand, priceHistory
+            name, description, price, category, supply, brand, priceHistory,
+            img: uploadImgResult.secure_url,
         });
         await newProduct.save();
         const newProductStat = new ProductStat({
@@ -113,7 +134,6 @@ export const updateProduct = async (req, res) => {
     try {
         const { id } = req.params;
         const { name, price, description, category, supply } = req.body;
-
         const product = await Product.findById(id);
 
         if (!product) {
@@ -130,7 +150,20 @@ export const updateProduct = async (req, res) => {
         if (description) product.description = description;
         if (category) product.category = category;
         if (supply) product.supply = supply;
-
+        if (req.file) {
+            let publicId = product.img.split('/').pop().split('.')[0];
+            await cloudinary.uploader.destroy(publicId);
+            let imgLink = './temp/' + req.file.filename;
+            const uploadImgResult = await cloudinary.uploader.upload(imgLink, { resource_type: 'image' });
+            fs.unlink(imgLink, err => {
+                if (err) {
+                    console.error(err);
+                    return res.status(500).json({ message: err.message });
+                }
+            });
+            product.img = uploadImgResult.secure_url;
+        }
+        
         const updatedProduct = await product.save();
 
         res.json(updatedProduct);
@@ -150,7 +183,7 @@ export const postCustomer = async (req, res) => {
                 role: "user",
             });
             await newUser.save();
-            res.status(201).json({newUser});
+            res.status(201).json({ newUser });
         }
         else {
             console.log("update user");
@@ -394,6 +427,165 @@ export const postTransaction = async (req, res) => {
     }
 };
 
+export const deleteTransaction = async (req, res) => {
+    try {
+        const { transactionId } = req.params;
+
+        // 1. Delete Transaction
+        const deletedTransaction = await Transaction.findByIdAndDelete(transactionId);
+        if (!deletedTransaction) {
+            return res.status(404).json({ message: "Transaction not found" });
+        }
+
+        const { userId, products } = deletedTransaction;
+
+        // 2. Update User
+        const user = await User.findByIdAndUpdate(
+            userId,
+            { $inc: { purchasevalue: -deletedTransaction.cost, purchaseamount: -deletedTransaction.numberOfProducts } },
+            { new: true }
+        );
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // 3. Update Product Supply and Statistics
+        for (const productDoc of products) {
+            const product = await Product.findById(productDoc.productId);
+            if (!product) {
+                console.warn(`Product not found: ${productDoc.productId}`);
+                continue;
+            }
+            product.quantity -= productDoc.quantity;
+            await product.save();
+
+            const productStat = await ProductStat.findOneAndUpdate(
+                { productId: productDoc._id, year: deletedTransaction.day.getFullYear() },
+                { $inc: { yearlySalesTotal: -productDoc.price * productDoc.quantity, yearlySalesUnits: -productDoc.quantity } },
+                { new: true }
+            );
+            if (!productStat) {
+                console.warn(`ProductStat not found for product ${productDoc.productId} and year ${deletedTransaction.day.getFullYear()}`);
+            }
+        }
+
+        // 4. Update Category and Brand Daily/Monthly Data
+        for (const productDoc of products) {
+            const category = await Category.findById(productDoc.category);
+            if (!category) {
+                console.warn(`Category not found: ${productDoc.category}`);
+                continue;
+            }
+
+            const brand = await Brand.findById(productDoc.brand);
+            if (!brand) {
+                console.warn(`Brand not found: ${productDoc.brand}`);
+                continue;
+            }
+
+            const transactionDate = deletedTransaction.day;
+
+            // Update Category Daily Data
+            const categoryDailyDataIndex = category.dailyData.findIndex(
+                (data) => data.day &&
+                    data.day.getFullYear() === transactionDate.getFullYear() &&
+                    data.day.getMonth() === transactionDate.getMonth() &&
+                    data.day.getDate() === transactionDate.getDate()
+            );
+            if (categoryDailyDataIndex !== -1) {
+                category.dailyData[categoryDailyDataIndex].salesTotal -= productDoc.price * productDoc.quantity;
+                category.dailyData[categoryDailyDataIndex].salesUnits -= productDoc.quantity;
+                category.dailyData[categoryDailyDataIndex].transactionNumbers -= 1;
+            } else {
+                console.warn(`Daily data for category ${productDoc.category} and date ${transactionDate} not found`);
+            }
+
+            // Update Category Monthly Data
+            const categoryMonthlyDataIndex = category.monthlyData.findIndex(
+                (data) => data.year === transactionDate.getFullYear() && data.month === transactionDate.getMonth()
+            );
+            if (categoryMonthlyDataIndex !== -1) {
+                category.monthlyData[categoryMonthlyDataIndex].salesTotal -= productDoc.price * productDoc.quantity;
+                category.monthlyData[categoryMonthlyDataIndex].salesUnits -= productDoc.quantity;
+                category.monthlyData[categoryMonthlyDataIndex].transactionNumbers -= 1;
+            } else {
+                console.warn(`Monthly data for category ${productDoc.category} and month ${transactionDate.getMonth()} not found`);
+            }
+            await category.save();
+
+            // Update Brand Daily Data (similar to category)
+            const brandDailyDataIndex = brand.dailyData.findIndex(
+                (data) => data.day &&
+                    data.day.getFullYear() === transactionDate.getFullYear() &&
+                    data.day.getMonth() === transactionDate.getMonth() &&
+                    data.day.getDate() === transactionDate.getDate()
+            );
+            if (brandDailyDataIndex !== -1) {
+                brand.dailyData[brandDailyDataIndex].salesTotal -= productDoc.price * productDoc.quantity;
+                brand.dailyData[brandDailyDataIndex].salesUnits -= productDoc.quantity;
+                brand.dailyData[brandDailyDataIndex].transactionNumbers -= 1;
+            } else {
+                console.warn(`Daily data for brand ${productDoc.brand} and date ${transactionDate} not found`);
+            }
+
+            const brandMonthlyDataIndex = brand.monthlyData.findIndex(
+                (data) => data.year === transactionDate.getFullYear() && data.month === transactionDate.getMonth()
+            );
+            if (brandMonthlyDataIndex !== -1) {
+                brand.monthlyData[brandMonthlyDataIndex].salesTotal -= productDoc.price * productDoc.quantity;
+                brand.monthlyData[brandMonthlyDataIndex].salesUnits -= productDoc.quantity;
+                brand.monthlyData[brandMonthlyDataIndex].transactionNumbers -= 1;
+            }
+            else {
+                console.warn(`Monthly data for brand ${productDoc.brand} and month ${transactionDate.getMonth()} not found`);
+            }
+            await brand.save();
+            
+            // Update OverallStat
+            const overallStat = await OverallStat.findOne({ year: transactionDate.getFullYear() });
+            if (!overallStat) {
+                console.warn(`OverallStat not found for year ${transactionDate.getFullYear()}`);
+                continue;
+            }
+            
+            // Update OverallStat Daily Data
+            const overallDailyDataIndex = overallStat.dailyData.findIndex(
+                (data) => data.day &&
+                    data.day.getFullYear() === transactionDate.getFullYear() &&
+                    data.day.getMonth() === transactionDate.getMonth() &&
+                    data.day.getDate() === transactionDate.getDate()
+            );
+            if (overallDailyDataIndex !== -1) {
+                overallStat.dailyData[overallDailyDataIndex].salesTotal -= productDoc.price * productDoc.quantity;
+                overallStat.dailyData[overallDailyDataIndex].salesUnits -= productDoc.quantity;
+                overallStat.dailyData[overallDailyDataIndex].transactionNumbers -= 1;
+            } else {
+                console.warn(`Daily data for overallStat and date ${transactionDate} not found`);
+            }
+
+            // Update OverallStat Monthly Data
+            const overallMonthlyDataIndex = overallStat.monthlyData.findIndex(
+                (data) => data.year === transactionDate.getFullYear() && data.month === transactionDate.getMonth()
+            );
+            if (overallMonthlyDataIndex !== -1) {
+                overallStat.monthlyData[overallMonthlyDataIndex].salesTotal -= productDoc.price * productDoc.quantity;
+                overallStat.monthlyData[overallMonthlyDataIndex].salesUnits -= productDoc.quantity;
+                overallStat.monthlyData[overallMonthlyDataIndex].transactionNumbers -= 1;
+            } else {
+                console.warn(`Monthly data for overallStat and month ${transactionDate.getMonth()} not found`);
+            }
+            await overallStat.save();
+        }
+        res.json({ message: "Transaction deleted successfully", deletedTransaction });
+        
+    } catch (error) {
+        console.log(error);
+        res.status(404).json({
+            message: error.message,
+        });
+    }
+};
+
 export const deleteProduct = async (req, res) => {
     try {
         const { id } = req.params;
@@ -402,6 +594,8 @@ export const deleteProduct = async (req, res) => {
         if (!product) {
             return res.status(404).json({ message: 'Product not found' });
         }
+        let publicId = product.img.split('/').pop().split('.')[0];
+        await cloudinary.uploader.destroy(publicId);
         await product.deleteOne({ _id: id });
         await productStat.deleteOne({ productId: id });
         res.json({

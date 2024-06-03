@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Box, Input, InputAdornment, Paper, TableBody, TableCell, TableRow, Toolbar, useTheme } from '@mui/material'
+import { Box, InputAdornment, TableBody, TableCell, TableRow, Toolbar, useTheme } from '@mui/material'
 import { useCreateCustomerMutation, useDeleteCustomerMutation, useGetCustomersQuery } from 'state/api'
 import Header from 'components/Header'
 import CustomerFormTest from './customerFormTest'
@@ -26,7 +26,6 @@ const headCells = [
 const Customers = () => {
     const theme = useTheme();
     const { data } = useGetCustomersQuery();
-    
     const [dataForEdit, setDataForEdit] = useState(null);
     const [createUser, { isLoading, error }] = useCreateCustomerMutation();
     const [deleteUser, { isLoading: isDeleting, error: deleteError }] = useDeleteCustomerMutation();
@@ -46,7 +45,7 @@ const Customers = () => {
         setFilterFn({
             fn: items => {
                 if (target.value === "")
-                    return items;
+                    return items;   
                 else
                     return items.filter(x => x.name.toLowerCase().includes(target.value))
             }
@@ -137,7 +136,7 @@ const Customers = () => {
                     <TblHead />
                     <TableBody>
                         {
-                            data && dataAfterPagingAndSorting().map((row) => (
+                            data && dataAfterPagingAndSorting(true).map((row) => (
                                 <TableRow key={row._id}>
                                     <TableCell>{row.name}</TableCell>
                                     <TableCell>{row.email}</TableCell>
@@ -163,7 +162,6 @@ const Customers = () => {
                                                     subTitle: 'Bạn không thể hoàn tác hành động này',
                                                     onConfirm: () => {onDelete(row._id)}
                                                 })
-                                                //onDelete(row._id)
                                             }}
                                         >
                                             <Delete/>

@@ -36,7 +36,6 @@ export default function ConfirmDialog(props) {
                 background: theme.palette.background.alt,
             },
             textAlign: "center",
-            //border none?
         }}>
             <DialogTitle>
                 <IconButton disableRipple sx={style.titleIcon}>
@@ -58,12 +57,12 @@ export default function ConfirmDialog(props) {
                 }}
             >
                 <CustomButton
-                    text="No"
+                    text="Có"
                     color="primary"
                     onClick={() => setConfirmDialog({ ...confirmDialog, isOpen: false })}
                 />
                 <CustomButton
-                    text="Yes"
+                    text="Không"
                     color="secondary"
                     onClick={confirmDialog.onConfirm}
                 />

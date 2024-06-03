@@ -23,8 +23,8 @@ export default function Usetable(data, headCells, filterFn) {
     }
   };
   const pages = [5, 10, 25];
-  const [page, setPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(pages[page]);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(pages[1]);
   const [order, setOrder] = useState();
   const [orderBy, setOrderBy] = useState();
 
@@ -95,17 +95,16 @@ export default function Usetable(data, headCells, filterFn) {
     }
     return 0;
   }
-  const dataAfterPagingAndSorting = () => {
+  const dataAfterPagingAndSorting = (paging) => {
     console.log("data from page:", data);
     console.log("filterFn:", filterFn);
     let filterData = stableSort(filterFn.fn(data), getComparator(order, orderBy));
-    if (filterData.length < rowsPerPage) {
+    if (filterData.length < rowsPerPage || !paging) {
       return filterData;
     }
     else {
       return filterData.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
     }
-    //return stableSort(filterFn.fn(data), getComparator(order, orderBy)).slice(page * rowsPerPage, (page + 1) * rowsPerPage);
   }
 
   const TblPagination = () => (<TablePagination

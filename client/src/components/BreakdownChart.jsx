@@ -6,6 +6,7 @@ import { useGetSalesQuery } from "state/api";
 const BreakdownChart = ({ isDashboard = false, isSales, isUnit }) => {
   const { data, isLoading } = useGetSalesQuery();
   const theme = useTheme();
+  console.log("Data:", data);
 
   if (!data || isLoading) return "Loading...";
   const selectedData = isSales ? data.salesByCategory : data.unitsByCategory;
@@ -148,7 +149,7 @@ const BreakdownChart = ({ isDashboard = false, isSales, isUnit }) => {
         <Typography variant="h6" fontWeight="200" textAlign="center">
           {!isDashboard && "Tổng:"} {isSales ? 
           (data.yearlySalesTotal).toLocaleString('vi-VN', {style : 'currency', currency : 'VND'}) : 
-          data.yearlyTotalSoldUnit + (isDashboard ? "" : "Mặt hàng" )}
+          data.yearlyTotalSoldUnit + (isDashboard ? "" : " Mặt hàng" )}
         </Typography>
       </Box>
     </Box>

@@ -1,5 +1,5 @@
 import { useTheme } from "@emotion/react";
-import { Box, Grid, Paper, TextField } from "@mui/material";
+import { Box } from "@mui/material";
 import { Useform, FormCustom } from "components/Useform";
 import CustomButton from "components/controls/CustomButton";
 import CustomInput from "components/controls/CustomInput";
@@ -8,20 +8,34 @@ import React, { useState, useEffect } from "react";
 import { useGetCustomersQuery, useGetProductsQuery, usePostTransactionMutation } from "state/api";
 
 const initialValue = {
-    userId: "",
-    product: "",
+    userId: null,
+    product: [],
 };
 
 
 export default function TransactionsFormTest(props) {
     const { addOrEdit, dataForEdit } = props;
+    console.log("Data for edit: ", dataForEdit);
     const { data: customerData } = useGetCustomersQuery();
-    const { postTransactions } = usePostTransactionMutation();
-    console.log("Customer data:", customerData);
     const { data: productData } = useGetProductsQuery();
-    console.log("Product data:", productData);
-    const [selectedUser, setSelectedUser] = useState(null);
-    const [selectedProducts, setSelectedProducts] = useState([]);
+    let newDataForEdit = {
+        userId: {
+            value: dataForEdit?.userId?._id,
+            label: dataForEdit?.userId?.name,
+            email: dataForEdit?.userId?.email,
+            phonenumber: dataForEdit?.userId?.phonenumber,
+        },
+        products: dataForEdit?.products?.map((product) => ({
+            value: product.productId._id,
+            label: product.productId.name,
+            price: product.productId.price,
+            quantity: product.quantity,
+        }))
+    };
+    console.log("newDataForEdit: ", newDataForEdit);
+
+    const [selectedUser, setSelectedUser] = useState(newDataForEdit?.userId || null);
+    const [selectedProducts, setSelectedProducts] = useState(newDataForEdit?.products || []);
 
     const validate = (fieldValues = values) => {
         let temp = { ...errors };
@@ -55,16 +69,18 @@ export default function TransactionsFormTest(props) {
     const productOptions = productData?.map((product) => ({
         value: product._id,
         label: product.name,
-        price: product.price, // added price
+        price: product.price,
     }));
     
 
     const handleUserChange = (selectedOption) => {
         setSelectedUser(selectedOption);
+        console.log("selectedUser: ", selectedOption);
     };
 
     const handleProductChange = (selectedOption) => {
         setSelectedProducts(selectedOption.map(option => ({ ...option, quantity: 1 })));
+        console.log("selectedProducts: ", selectedOption);
     };
 
     const handleQuantityChange = (productId, quantity) => {
@@ -79,11 +95,6 @@ export default function TransactionsFormTest(props) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-
-        if (!selectedUser || !selectedProducts.length) {
-            // handle validation error...
-            return;
-        }
 
         const payload = {
             userId: selectedUser.value,

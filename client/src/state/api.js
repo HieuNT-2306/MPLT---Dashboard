@@ -1,4 +1,3 @@
-    import { create } from '@mui/material/styles/createTransitions';
     import {createApi, fetchBaseQuery} from '@reduxjs/toolkit/query/react'
 
     export const api = createApi({ 
@@ -31,7 +30,7 @@
             }),
             getCustomers: builder.query({ 
                 query: () => 'client/customers',
-                providesTags: ['Customers']
+                providesTags: ['User']
             }),
             getTransactions: builder.query({
                 query: ({ page, pageSize, sort, search}) => ({
@@ -54,6 +53,13 @@
                 }),
                 invalidatesTags: ['Transactions']
             }),
+            deleteTransaction: builder.mutation({
+                query: (id) => ({
+                    url: `client/delete/transaction/${id}`,
+                    method: 'DELETE'
+                }),
+                invalidatesTags: ['Transactions']
+            }), 
             getSales: builder.query({
                 query: () => 'sales/overallstat',
                 providesTags: ['Sales']
@@ -71,6 +77,7 @@
         useGetCustomersQuery,
         useGetTransactionsQuery,
         usePostTransactionMutation,
+        useDeleteTransactionMutation,
         useGetSalesQuery,
         useGetDashboardStatsQuery,
         useCreateCustomerMutation,

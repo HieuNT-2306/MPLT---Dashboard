@@ -1,6 +1,6 @@
-import { Box, InputAdornment, Table, TableBody, TableCell, TableContainer, TableRow, Toolbar, useTheme } from '@mui/material';
+import { Box, InputAdornment, TableBody, TableCell, TableRow, Toolbar, useTheme } from '@mui/material';
 import React, { useState } from 'react';
-import { useGetCustomersQuery, useGetTransactionsQuery, usePostTransactionMutation } from 'state/api';
+import { useDeleteTransactionMutation, useGetTransactionsQuery, usePostTransactionMutation } from 'state/api';
 import Header from 'components/Header';
 import CustomInput from 'components/controls/CustomInput';
 import { Add, Delete, Edit, Search } from '@mui/icons-material';
@@ -8,8 +8,9 @@ import CustomButton from 'components/controls/CustomButton';
 import Usetable from 'components/Usetable';
 import ActionButton from 'components/controls/ActionButton';
 import Popup from 'components/Popup';
-import TransactionsForm from './transactionsForm';
 import TransactionsFormTest from './transactionsFormTest';
+import Notification from 'components/Notification';
+import ConfirmDialog from 'components/ConfirmDialog';
 
 const headCells = [
     { id: 'userId.name', label: 'Tên khách hàng' },
@@ -29,11 +30,11 @@ const Transaction = () => {
     const [filterFn, setFilterFn] = useState({ fn: items => { return items; } });
     const [dataForEdit, setDataForEdit] = useState(null);
     const [openPopup, setOpenPopup] = useState(false);
+    const [notify, setNotify] = useState({ isOpen: false, message: '', type: '' });
     const {data } = useGetTransactionsQuery({ page, pageSize, sort: JSON.stringify(sort), search: "" });
     const [postTransactions, { isLoading, error }] = usePostTransactionMutation();
-
-
-    console.log("transaction", data);
+    const [deleteTransaction, { isLoading: isDeleting,  error: deletingError }] = useDeleteTransactionMutation();
+    const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, title: '', subTitle: '' });
     const {
         TblContainer,
         TblHead,
@@ -45,9 +46,19 @@ const Transaction = () => {
         console.log(transaction);
         postTransactions(transaction);
         resetForm();
-        
+        setOpenPopup(false);
+        setNotify({
+            isOpen: true,
+            message: 'Thêm thanh toán thành công',
+            type: 'success'
+        });
     }
-    
+    const openInPopup = (transactions) => {
+        console.log("Open in popup: ", transactions);
+        setDataForEdit(transactions);
+        setOpenPopup(true);
+    }
+
     const handleSearch = (e) => {
         const target = e.target;
         setFilterFn({
@@ -58,6 +69,17 @@ const Transaction = () => {
                     return items.filter(x => x.userId.name.toLowerCase().includes(target.value))
             }
         })
+    }
+    const onDelete = (id) => {
+        setConfirmDialog({ ...confirmDialog, isOpen: false});
+        console.log("Deleting id:", id);
+        deleteTransaction(id);
+        console.log("Deleting complete:", id);
+        setNotify({
+            isOpen: true,
+            message: 'Xóa hóa đơn thành công',
+            type: 'error'
+        });
     }
 
   return (
@@ -104,14 +126,17 @@ const Transaction = () => {
                         color: theme.palette.secondary[100]
                     }}
                     startIcon={<Add />}
-                    onClick={() => setOpenPopup(true)}
+                    onClick={() => {
+                        setDataForEdit(null)
+                        setOpenPopup(true)
+                    }}
                 />
             </Toolbar>
             <TblContainer>
                 <TblHead />
                 <TableBody>
                     {
-                        data && dataAfterPagingAndSorting().map((row) => (
+                        data && dataAfterPagingAndSorting(true).map((row) => (
                             <TableRow key={row._id}>
                                 <TableCell>{row.userId.name}</TableCell>
                                 <TableCell>{row.userId.email}</TableCell>
@@ -123,14 +148,24 @@ const Transaction = () => {
                                     <ActionButton 
                                         variant="outlined"
                                         color="primary"
-                                        onClick={() => console.log("View detail")}
+                                        onClick={() => openInPopup(row)}
                                     >
                                         <Edit />
                                     </ActionButton>
                                     <ActionButton
                                         variant="outlined"
                                         color="secondary"
-                                        onClick={() => console.log("Delete")}
+                                        onClick={() => 
+                                            {
+                                                console.log("Delete", row._id);
+                                                setConfirmDialog({
+                                                    isOpen: true,
+                                                    title: `Bạn chắc chắn muốn xóa hoán đơn của khách hàng ${row.userId.name}, tại ${Date(row.createdAt)} không?`,
+                                                    subTitle: 'Bạn không thể hoàn tác hành động này',
+                                                    onConfirm: () => {onDelete(row._id)}
+                                                })
+                                            }
+                                        }
                                     >
                                         <Delete />
                                     </ActionButton>
@@ -152,6 +187,14 @@ const Transaction = () => {
                     addOrEdit={addOrEdit}
                  />
             </Popup>
+            <Notification 
+                notify={notify}
+                setNotify={setNotify}
+            />
+            <ConfirmDialog 
+                confirmDialog={confirmDialog}
+                setConfirmDialog={setConfirmDialog}
+            />
 
         </Box>
       

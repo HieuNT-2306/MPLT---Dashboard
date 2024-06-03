@@ -1,12 +1,19 @@
 import React, { useState } from 'react';
-import { Box, Card, CardActions, CardContent, Collapse, Button, Typography, useTheme, useMediaQuery } from '@mui/material';
+import { Box, Card, CardActions, CardContent, Collapse, Button, Typography, useTheme, useMediaQuery, Toolbar, InputAdornment } from '@mui/material';
 import Header from 'components/Header';
 import { useGetProductsQuery } from 'state/api';
 import FlexBetween from 'components/FlexBetween';
+import CustomInput from 'components/controls/CustomInput';
+import { Add, Search } from '@mui/icons-material';
+import Usetable from 'components/Usetable';
+import CustomButton from 'components/controls/CustomButton';
+import Popup from 'components/Popup';
+import ProductForm from './productForm';
 
 const Product = ({
     _id,
     brand,
+    img,
     name,
     price,
     description,
@@ -51,6 +58,7 @@ const Product = ({
                 }} color={theme.palette.secondary[400]}>
                     {(price).toLocaleString('vi-VN', {style : 'currency', currency : 'VND'})}
                 </Typography>
+                <img src={img} alt={name} style={{ width: "100%", height: "auto", border: "1px solid blue" }} />
                 <Typography variant="body2">
                     {description}
                 </Typography>
@@ -98,15 +106,65 @@ const Product = ({
 function Products() {
     const { data, isLoading } = useGetProductsQuery();
     console.log("product", data);
+    const theme = useTheme();
     const isNonMoble = useMediaQuery("(min-width:900px)")
+    const [sort, setSort] = useState({ });
+    const [filterFn, setFilterFn] = useState({ fn: items => { return items; } });
+    const [dataForEdit, setDataForEdit] = useState(null);
+    const [openPopup, setOpenPopup] = useState(false);
+
+    const {
+        TblPagination,
+        dataAfterPagingAndSorting,
+    } = Usetable(data, null, filterFn);
+
+    const handleSearch = (e) => {
+        const target = e.target;
+        setFilterFn({
+            fn: items => {
+                if (target.value === "") {
+                    return items;
+                } else {
+                    return items.filter(x => x.name.toLowerCase().includes(target.value.toLowerCase()));
+                }
+            }
+        });
+    }
     return (
         <Box m="0.5rem 1.5rem">
             <Header title="Sản phẩm" subTitle="Xem danh sách sản phẩm" />
+            <Toolbar>
+                <CustomInput
+                    label="Tìm kiếm sản phẩm"
+                    sx={{ width: '55%' }}
+                    InputProps={{
+                        startAdornment: <InputAdornment position="start">
+                            <Search />
+                        </InputAdornment>
+                    }}
+                    onChange={handleSearch}
+                />
+                <CustomButton 
+                    text="Thêm mặt hàng mới"
+                    variant="outlined"
+                    color="primary"
+                    sx={{
+                        marginLeft: 'auto',
+                        backgroundColor: theme.palette.primary.light,
+                        color: theme.palette.secondary[100]
+                    }}
+                    startIcon={<Add />}
+                    onClick={() => {
+                        setDataForEdit(null)
+                        setOpenPopup(true)
+                    }}
+                />
+            </Toolbar>
             {data ? (
                 <Box
                     mt="1rem"
                     display="grid"
-                    gridTemplateColumns="repeat(4,minmax(0,1fr))"
+                    gridTemplateColumns="repeat(5,minmax(0,1fr))"
                     justifyContent="space-between"
                     rowGap="2rem"
                     columnGap="1.5%"
@@ -117,7 +175,7 @@ function Products() {
                     }}
                 >
                     {
-                        data.map(({
+                        data && dataAfterPagingAndSorting(true).map(({
                             _id,
                             name,
                             price,
@@ -125,7 +183,8 @@ function Products() {
                             category,
                             brand,
                             supply,
-                            productStat
+                            productStat,
+                            img
                         }) => (
                             <Product
                                 key={_id}
@@ -137,11 +196,22 @@ function Products() {
                                 brand={brand}
                                 supply={supply}
                                 productStat={productStat}
+                                img={img}   
                             />
                         ))
                     }
-                </Box>
+                </Box>  
             ) : <h1>Đang tải...</h1>}
+            <TblPagination />
+            <Popup 
+                title="Thêm mặt hàng mới"
+                openPopup={openPopup}
+                setOpenPopup={setOpenPopup}
+            >
+                {/* <TransactionsForm /> */}
+                <ProductForm
+                />
+            </Popup>
         </Box>
     )
 }

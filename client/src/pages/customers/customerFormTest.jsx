@@ -26,7 +26,7 @@ export default function CustomerFormTest(props) {
         pageContent: {
             margin: "5px",
             padding: "3px",
-            backgroundColor: theme.palette.background.default,
+            backgroundColor: "#f9f9f9",
         },
         customButton: {
             margin: "8px"
@@ -60,11 +60,8 @@ export default function CustomerFormTest(props) {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (validate()) {
-            //them api
             addOrEdit(values, resetForm);
-        } else {
-            window.alert("Gửi không thành công");
-        }
+        } 
     }
     useEffect(() => {
         if (dataForEdit != null) {
