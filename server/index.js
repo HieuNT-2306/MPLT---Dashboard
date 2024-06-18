@@ -9,6 +9,7 @@ import clientRoutes from './routes/client.js';
 import generalRoutes from './routes/general.js';
 import managementRoutes from './routes/management.js';
 import salesRoutes from './routes/sales.js';
+import scrapRoutes from './routes/scrap.js';
 
 
 dotenv.config();
@@ -26,6 +27,7 @@ app.use("/client", clientRoutes);
 app.use("/general", generalRoutes);
 app.use("/management", managementRoutes);
 app.use("/sales", salesRoutes);
+app.use("/scrap", scrapRoutes);
 
 //Mongoose setup
 const PORT = process.env.PORT || 5000;

@@ -1,3 +1,5 @@
-2024/05/15-10:56:21.244 3980 Reusing MANIFEST C:\Users\AD\Desktop\MPLT - Dashboard\puppeteer\tmp\Default\Local Storage\leveldb/MANIFEST-000001
-2024/05/15-10:56:21.251 3980 Recovering log #67
-2024/05/15-10:56:21.256 3980 Reusing old log C:\Users\AD\Desktop\MPLT - Dashboard\puppeteer\tmp\Default\Local Storage\leveldb/000067.log 
+2024/06/16-19:25:00.869 3d1c Reusing MANIFEST C:\Users\AD\Desktop\MPLT - Dashboard\puppeteer\tmp\Default\Local Storage\leveldb/MANIFEST-000001
+2024/06/16-19:25:00.873 3d1c Recovering log #7
+2024/06/16-19:25:00.873 3d1c Level-0 table #10: started
+2024/06/16-19:25:00.888 3d1c Level-0 table #10: 19660 bytes OK
+2024/06/16-19:25:00.899 3d1c Delete type=0 #7

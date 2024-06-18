@@ -31,6 +31,15 @@ const ProductSchema = mongoose.Schema({
         required: true,
         default: 'https://www.proclinic-products.com/build/static/default-product.30484205.png'
     },
+    dataFromScrapingTiki: {
+        type: Object,
+    },
+    dataFromScrapingSendo: {
+        type: Object,
+    },
+    dataFromScrapingLazada: {
+        type: Object,
+    },
     priceHistory: [{
         price: {
             type: Number,

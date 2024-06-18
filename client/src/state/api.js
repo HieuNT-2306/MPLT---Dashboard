@@ -3,11 +3,19 @@
     export const api = createApi({ 
         baseQuery: fetchBaseQuery({ baseUrl: process.env.REACT_APP_BASE_URL}),
         reducerPath: 'adminApi',
-        tagTypes: ['User', 'Products', 'Customers', 'Transactions', 'Sales', 'Dashboard'],
+        tagTypes: ['User', 'Products', 'Customers', 'Transactions', 'Sales', 'Dashboard', 'Categories'],
         endpoints: (builder) => ({ 
             getUser: builder.query({
                 query: (id) => `general/user/${id}`,
                 providesTags: ['User']
+            }),
+            getCategories: builder.query({
+                query: () => 'management/categories',
+                providesTags: ['Categories']
+            }),
+            getBrands: builder.query({
+                query: () => 'management/brands',
+                providesTags: ['Brands']
             }),
             createCustomer: builder.mutation({
                 query: (userData) => ({
@@ -60,6 +68,21 @@
                 }),
                 invalidatesTags: ['Transactions']
             }), 
+            postProduct: builder.mutation({
+                query: (productData) => ({
+                    url: 'client/post/products',
+                    method: 'POST',
+                    body: productData
+                }),
+                invalidatesTags: ['Products']
+            }),
+            deleteProduct: builder.mutation({
+                query: (id) => ({
+                    url: `client/delete/product/${id}`,
+                    method: 'DELETE'
+                }),
+                invalidatesTags: ['Products']
+            }),
             getSales: builder.query({
                 query: () => 'sales/overallstat',
                 providesTags: ['Sales']
@@ -73,6 +96,8 @@
 
     export const {
         useGetUserQuery,
+        useGetCategoriesQuery,
+        useGetBrandsQuery,
         useGetProductsQuery,
         useGetCustomersQuery,
         useGetTransactionsQuery,
@@ -81,5 +106,7 @@
         useGetSalesQuery,
         useGetDashboardStatsQuery,
         useCreateCustomerMutation,
+        usePostProductMutation,
+        useDeleteProductMutation,
         useDeleteCustomerMutation
     } = api;

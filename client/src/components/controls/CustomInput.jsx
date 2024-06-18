@@ -13,6 +13,7 @@ export default function CustomInput(props) {
             sx={sx}
             onChange={onChange}
             {...other}
+            multiline={true}
             {...(error && {error:true, helperText: error})}
         />
     )

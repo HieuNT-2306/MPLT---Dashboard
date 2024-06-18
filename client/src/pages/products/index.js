@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Card, CardActions, CardContent, Collapse, Button, Typography, useTheme, useMediaQuery, Toolbar, InputAdornment } from '@mui/material';
 import Header from 'components/Header';
-import { useGetProductsQuery } from 'state/api';
+import { useDeleteProductMutation, useGetBrandsQuery, useGetCategoriesQuery, useGetProductsQuery, usePostProductMutation } from 'state/api';
 import FlexBetween from 'components/FlexBetween';
 import CustomInput from 'components/controls/CustomInput';
 import { Add, Search } from '@mui/icons-material';
@@ -9,27 +9,45 @@ import Usetable from 'components/Usetable';
 import CustomButton from 'components/controls/CustomButton';
 import Popup from 'components/Popup';
 import ProductForm from './productForm';
+import Notification from 'components/Notification'
+import ConfirmDialog from 'components/ConfirmDialog'
 
-const Product = ({
-    _id,
-    brand,
-    img,
-    name,
-    price,
-    description,
-    category,
-    supply,
-    productStat
-}) => {
+const Product = (
+    // {_id,
+    // brand,
+    // img,
+    // name,
+    // price,
+    // description,
+    // category,
+    // supply,
+    // productStat}
+   {product, openInPopup, categories, brands, onDelete}
+) => {
     const theme = useTheme();
     const [isExpanded, setIsExpanded] = useState(false);
+    const { _id, brand, img, name, price, description, category, supply, productStat } = product;
+    const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, title: '', subTitle: '' });
+
+    const getCategoryName = (categoryId) => {
+        if (!categories) return '';
+        const category = categories.find(cat => cat._id === categoryId);
+        return category ? category.name : '';
+    };
+
+    const getBrandName = (brandId) => {
+        if (!brands) return '';
+        const brand = brands.find(br => br._id === brandId);
+        return brand ? brand.name : '';
+    };
+
     return (
         <Card
             sx={{
                 backgroundImage: "none",
                 baclground: theme.palette.primary[700],
                 borderRadius: "0.5rem"
-            }}
+            }} 
         >
             <CardContent>
                 <FlexBetween>
@@ -39,7 +57,7 @@ const Product = ({
                         color={theme.palette.secondary[200]}
                         gutterBottom
                     >
-                        {category}
+                        {getCategoryName(category)}
                     </Typography>
                     <Typography sx={{
                         fontSize: 14,
@@ -47,7 +65,7 @@ const Product = ({
                         color={theme.palette.secondary[200]}
                         gutterBottom
                     >
-                        {brand}
+                        {getBrandName(brand)}
                     </Typography>
                 </FlexBetween>
                 <Typography variant="h5" component="div">
@@ -58,7 +76,7 @@ const Product = ({
                 }} color={theme.palette.secondary[400]}>
                     {(price).toLocaleString('vi-VN', {style : 'currency', currency : 'VND'})}
                 </Typography>
-                <img src={img} alt={name} style={{ width: "100%", height: "auto", border: "1px solid blue" }} />
+                <img src={img} alt={name} style={{ width: "100%", aspectRatio: "1 / 1", objectFit: "cover", border: "1px solid blue" }} />
                 <Typography variant="body2">
                     {description}
                 </Typography>
@@ -66,53 +84,49 @@ const Product = ({
             <CardActions>
                 <Button
                     size="small"
-                    onClick={() => setIsExpanded(!isExpanded)}
+                    onClick={() => openInPopup(product)}
                     sx={{
                         color: theme.palette.neutral[200],
                     }}
                 >
-                    {isExpanded ? "Thu gọn" : "Xem thêm"}
+                    Xem thêm                    
                 </Button>
                 <Button size="small"
                     sx={{
                         color: "red",
                     }}
+                    onClick={() => {
+                        console.log("._id", product._id);
+                        setConfirmDialog({
+                            isOpen: true,
+                            title: `Bạn chắc chắn muốn xóa sản phẩm ${name} không?`,
+                            subTitle: 'Bạn không thể hoàn tác hành động này',
+                            onConfirm: () => {onDelete(product)}
+                        })
+                    }}
                 >Xóa</Button>
             </CardActions>
-            <Collapse
-                in={isExpanded}
-                timeout="auto"
-                unmountOnExit
-                sx={{
-                    color: theme.palette.neutral[200],
-                }}
-            >
-                <CardContent>
-                    <Typography >
-                        Số lượng còn trong kho: {supply}
-                    </Typography>
-                    <Typography >
-                        Số lượng bán năm nay: {productStat[0].yearlySalesUnits} sản phẩm
-                    </Typography>
-                    <Typography >
-                        Doanh số bán năm nay: {(productStat[0].yearlySalesTotal).toLocaleString('vi-VN', {style : 'currency', currency : 'VND'})}
-                    </Typography>
-                </CardContent>
-            </Collapse>
+            <ConfirmDialog 
+                    confirmDialog={confirmDialog}
+                    setConfirmDialog={setConfirmDialog}
+                />
         </Card>
     )
 };
 
 function Products() {
     const { data, isLoading } = useGetProductsQuery();
-    console.log("product", data);
+    const [postProduct] = usePostProductMutation();
+    const [deleteProduct] = useDeleteProductMutation();
     const theme = useTheme();
     const isNonMoble = useMediaQuery("(min-width:900px)")
     const [sort, setSort] = useState({ });
     const [filterFn, setFilterFn] = useState({ fn: items => { return items; } });
     const [dataForEdit, setDataForEdit] = useState(null);
     const [openPopup, setOpenPopup] = useState(false);
-
+    const { data: categories, isLoading: isLoadingCategories } = useGetCategoriesQuery();
+    const { data: brands, isLoading: isLoadingBrands } = useGetBrandsQuery();
+    const [notify, setNotify] = useState({ isOpen: false, message: '', type: '' });
     const {
         TblPagination,
         dataAfterPagingAndSorting,
@@ -130,6 +144,48 @@ function Products() {
             }
         });
     }
+    const addOrEdit = async (product, resetForm) => {
+        console.log("product at editing:", product);
+        const response = await postProduct(product);
+        if (response.data.message === "Add product succesfully") {
+            setNotify({
+                isOpen: true,
+                message: "Thêm sản phẩm thành công",
+                type: "success"
+            });
+        } else {
+            setNotify({
+                isOpen: true,
+                message: `Thêm sản phẩm thất bại, lỗi: ${response.data.message}`,
+                type: "error"
+            });
+        }        
+        resetForm();
+        setOpenPopup(false);
+    }
+
+    const openInPopup = (product) => {
+        console.log("Product for editing: ", product);
+        setDataForEdit(product);
+        setOpenPopup(true);
+    }
+    const onDelete = async (product) => {
+        const response = await deleteProduct(product._id);
+        if (response.data.message === "Product deleted successfully") {
+            setNotify({
+                isOpen: true,
+                message: "Xóa sản phẩm thành công",
+                type: "success"
+            });
+        } else {
+            setNotify({
+                isOpen: true,
+                message: `Xóa sản phẩm thất bại, lỗi: ${response.data.message}`,
+                type: "error"
+            });
+        }
+    }
+
     return (
         <Box m="0.5rem 1.5rem">
             <Header title="Sản phẩm" subTitle="Xem danh sách sản phẩm" />
@@ -175,28 +231,17 @@ function Products() {
                     }}
                 >
                     {
-                        data && dataAfterPagingAndSorting(true).map(({
-                            _id,
-                            name,
-                            price,
-                            description,
-                            category,
-                            brand,
-                            supply,
-                            productStat,
-                            img
-                        }) => (
+                        data && dataAfterPagingAndSorting(true).map((
+                            product
+                        ) => (
                             <Product
-                                key={_id}
-                                _id={_id}
-                                name={name}
-                                price={price}
-                                description={description}
-                                category={category}
-                                brand={brand}
-                                supply={supply}
-                                productStat={productStat}
-                                img={img}   
+
+                                key={product._id}
+                                product={product}
+                                openInPopup={openInPopup}
+                                onDelete={onDelete}
+                                categories={categories}
+                                brands={brands}
                             />
                         ))
                     }
@@ -210,8 +255,15 @@ function Products() {
             >
                 {/* <TransactionsForm /> */}
                 <ProductForm
+                    addOrEdit={addOrEdit}
+                    dataForEdit={dataForEdit}
+                    setOpenPopup={setOpenPopup}
                 />
             </Popup>
+            <Notification 
+                    notify={notify}
+                    setNotify={setNotify}
+            />
         </Box>
     )
 }

@@ -22,16 +22,8 @@ export const getProducts = async (req, res) => {
 
         const productsStat = await Promise.all(products.map(async (product) => {
             const productStat = await ProductStat.find({ productId: product._id });
-
-            const brandJson = await Brand.findById(product.brand); // Fetch brand
-            const brandName = brandJson?.name || "Unknown Brand";
-
-            const categoryJson = await Category.findById(product.category); // Fetch brand
-            const categoryName = categoryJson?.name || "Unknown Category";
             return {
                 ...product._doc,
-                brand: brandName,
-                category: categoryName,
                 productStat,
             };
         }));
@@ -121,7 +113,7 @@ export const postProducts = async (req, res) => {
             dailyData: []
         });
         await newProductStat.save();
-        res.status(201).json({ product: newProduct, productStat: newProductStat });
+        res.status(201).json({ message: "Add product succesfully",product: newProduct, productStat: newProductStat });
     } catch (error) {
         console.log(error);
         res.status(404).json({
@@ -598,10 +590,8 @@ export const deleteProduct = async (req, res) => {
         await cloudinary.uploader.destroy(publicId);
         await product.deleteOne({ _id: id });
         await productStat.deleteOne({ productId: id });
-        res.json({
+        res.status(200).json({
             message: 'Product deleted successfully',
-            product,
-            productStat
         });
     } catch (error) {
         res.status(500).json({ message: error.message });

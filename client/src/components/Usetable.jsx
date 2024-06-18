@@ -96,8 +96,6 @@ export default function Usetable(data, headCells, filterFn) {
     return 0;
   }
   const dataAfterPagingAndSorting = (paging) => {
-    console.log("data from page:", data);
-    console.log("filterFn:", filterFn);
     let filterData = stableSort(filterFn.fn(data), getComparator(order, orderBy));
     if (filterData.length < rowsPerPage || !paging) {
       return filterData;

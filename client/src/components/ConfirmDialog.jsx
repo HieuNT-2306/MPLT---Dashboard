@@ -57,12 +57,12 @@ export default function ConfirmDialog(props) {
                 }}
             >
                 <CustomButton
-                    text="Có"
+                    text="Không"
                     color="primary"
                     onClick={() => setConfirmDialog({ ...confirmDialog, isOpen: false })}
                 />
                 <CustomButton
-                    text="Không"
+                    text="Có"
                     color="secondary"
                     onClick={confirmDialog.onConfirm}
                 />

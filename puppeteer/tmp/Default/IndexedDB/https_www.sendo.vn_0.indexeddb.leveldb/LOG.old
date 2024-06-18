@@ -1,0 +1,14 @@
+2024/06/16-19:25:02.705 9f4 Reusing MANIFEST C:\Users\AD\Desktop\MPLT - Dashboard\puppeteer\tmp\Default\IndexedDB\https_www.sendo.vn_0.indexeddb.leveldb/MANIFEST-000001
+2024/06/16-19:25:02.721 9f4 Recovering log #58
+2024/06/16-19:25:02.722 9f4 Reusing old log C:\Users\AD\Desktop\MPLT - Dashboard\puppeteer\tmp\Default\IndexedDB\https_www.sendo.vn_0.indexeddb.leveldb/000058.log 
+2024/06/16-19:25:02.723 9f4 Delete type=2 #56
+2024/06/16-19:25:09.722 3128 Level-0 table #63: started
+2024/06/16-19:25:09.759 3128 Level-0 table #63: 3804 bytes OK
+2024/06/16-19:25:09.764 3128 Delete type=0 #58
+2024/06/16-19:25:09.765 1f80 Manual compaction at level-0 from '\x00\x13\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x14\x00\x00\x00' @ 0 : 0; will stop at '\x00\x13\x00\x00\x05' @ 1764 : 1
+2024/06/16-19:25:09.765 1f80 Compacting 1@0 + 1@1 files
+2024/06/16-19:25:09.786 1f80 Generated table #64@0: 159 keys, 3135 bytes
+2024/06/16-19:25:09.786 1f80 Compacted 1@0 + 1@1 files => 3135 bytes
+2024/06/16-19:25:09.789 1f80 compacted to: files[ 0 1 1 0 0 0 0 ]
+2024/06/16-19:25:09.789 1f80 Delete type=2 #63
+2024/06/16-19:25:09.790 1f80 Manual compaction at level-0 from '\x00\x13\x00\x00\x05' @ 1764 : 1 .. '\x00\x14\x00\x00\x00' @ 0 : 0; will stop at (end)
