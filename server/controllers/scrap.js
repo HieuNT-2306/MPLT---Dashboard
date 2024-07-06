@@ -1,5 +1,9 @@
 import puppeteer from 'puppeteer';
 import Product from '../models/product.js';
+import { calculateSimilarityScore } from '../helper/diceCoefficent.js';
+import { toLowerCaseNonAccentVietnamese } from '../helper/vietnameseTextToLowerCase.js';
+import Category from '../models/category.js';
+import Brand from '../models/brand.js';
 const handleSoldNumberLazada = async (productHandle) => {
     if (await productHandle.$('._1cEkb > span') === null) {
         return -1;
@@ -20,6 +24,55 @@ const handleSoldNumberTiki = async (productHandle) => {
     }
 }
 
+const handleSoldNumberHasaki = async (productHandle) => {
+    if (await productHandle.$('.item_count_by') === null) {
+        return -1;
+    }
+    else {
+        const soldNumberText = await productHandle.$eval('.item_count_by', span => span.innerText);
+        return handleNumber(soldNumberText);
+    }
+}
+
+const handleSoldNumber = async (productHandle, selector) => {
+    if (await productHandle.$(selector) === null) {
+        return -1;
+    }
+    else {
+        const soldNumberText = await productHandle.$eval(selector, span => span.innerText);
+        return handleNumber(soldNumberText);
+    }
+}
+
+const getKeywords = (str) => {
+    return str.trim().toLowerCase().split(' ');
+}
+
+const filterProductsByKeywords = (products, keywords, brand, category) => {
+    console.log(brand);
+    console.log(category);
+    return products.filter(product => {
+        const productName = toLowerCaseNonAccentVietnamese(product.name);
+        if (!productName.includes(brand) || !productName.includes(category)){
+            return false;
+        }
+        if (keywords.length !== 0) {
+            let matchCount = 0;
+            for (const keyword of keywords) {
+                if (productName.includes(keyword)) {
+                    matchCount++;
+                }
+                if (matchCount >= 2) {
+                    return true;
+                }
+            }
+            return false;
+        } else {
+            return true;
+        }
+    });
+}
+
 const handleSoldNumberSendo = async (productHandle) => {
     if (await productHandle.$('.d7ed-bm83Kw') === null) {
         return -1;
@@ -27,19 +80,6 @@ const handleSoldNumberSendo = async (productHandle) => {
     else return await productHandle.$eval('.d7ed-bm83Kw', span => span.innerText);
 }
 
-const toLowerCaseNonAccentVietnamese = (str) => {
-    str = str.toLowerCase();
-    str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
-    str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
-    str = str.replace(/ì|í|ị|ỉ|ĩ/g, "i");
-    str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o");
-    str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u");
-    str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
-    str = str.replace(/đ/g, "d");
-    str = str.replace(/\u0300|\u0301|\u0303|\u0309|\u0323/g, ""); 
-    str = str.replace(/\u02C6|\u0306|\u031B/g, ""); 
-    return str;
-}
 
 const handleNumber = (number) => {
     const numberText = number.replace(/[^\d.]/g, '');
@@ -131,14 +171,14 @@ export const scrapLazada = async (req, res) => {
     try {
         console.log("Scraping Lazada");
         let id = req.params.id;
-        let numberOfProducts = req.params.num || 5;
-        const product = await Product.findById(id);
-        let productName = (product.searchName != '') ? product.searchName.replace(/-/g, "%20") : product.name.replace(/-/g, "%20");
+        let numberOfProducts = req.params.num || 10;
+        const scrapProduct = await Product.findById(id);
+        let productName = (!scrapProduct.searchName) ? scrapProduct.searchName.replace(/-/g, "%20") : scrapProduct.name.replace(/-/g, "%20");
         productName = toLowerCaseNonAccentVietnamese(productName);
         let searchLink = `https://www.lazada.vn/catalog/?2&q=${productName}`;
         console.log(productName)
         console.log("Opening Browser");
-        await page.goto(searchLink);
+        await page.goto(searchLink, { waitUntil: 'domcontentloaded' });
         console.log("Browser opened");
         await page.waitForSelector("._17mcb");
         console.log("Scraping for products in ._17mcb");
@@ -154,7 +194,7 @@ export const scrapLazada = async (req, res) => {
                 return anchorText.replace(/<i[^>]*>|<\/i>/g, "");
             });
             const price = await productHandle.$eval('.aBrP0 > span', span => span.innerText);
-            const soldNumber = await handleSoldNumberLazada(productHandle);
+            const soldNumber = await handleSoldNumber(productHandle, '._1cEkb > span');
             const link = await productHandle.$eval('.RfADt > a', a => a.href);
             // const img = await productHandle.$eval('.picture-wrapper.jBwCF > img', async img => {
             //     await new Promise((resolve, reject) => {
@@ -168,14 +208,22 @@ export const scrapLazada = async (req, res) => {
             //     return img;
             // });
             // const img = await productHandle.$eval('.picture-wrapper.jBwCF > img', img => img.src);
-            const product = { name, price, soldNumber, link }
+            const similarityScore = calculateSimilarityScore(scrapProduct.name, toLowerCaseNonAccentVietnamese(name));
+            const product = { name, price, soldNumber, link, similarityScore }
             productsLazada.push(product);
         }
         console.log("Scraping complete");
-        await browser.close();
-        //return { "Lazada": productsLazada, "TimesTakenInMS": timeEnd - timeStart };
-        
-        productsLazada.sort((a, b) => b.soldNumber - a.soldNumber);
+
+        const productCategory = await Category.findById(scrapProduct.category);
+        productCategory.name = toLowerCaseNonAccentVietnamese(productCategory.name.trim().split(' ')[0]);
+        const productBrand = await Brand.findById(scrapProduct.brand);
+        productBrand.name = toLowerCaseNonAccentVietnamese(productBrand.name);
+        let keywords = [];
+        if (scrapProduct.searchName !== '') {
+            keywords = getKeywords(scrapProduct.searchName);
+        } 
+        productsLazada = filterProductsByKeywords(productsLazada, keywords, productCategory.name, productBrand.name);
+        productsLazada.sort((a, b) => b.similarityScore - a.similarityScore);
         await Product.findByIdAndUpdate(id, { dataFromScrapingLazada: { products: productsLazada.slice(0, numberOfProducts), lastScraped: new Date() }});
         res.status(200).json({ dataFromScrapingLazada: { products: productsLazada.slice(0, numberOfProducts), lastScraped: new Date() }})
     } catch (error) {
@@ -204,13 +252,14 @@ export const scrapTiki = async (req, res) => {
     });
     try {
         console.log("Scraping tiki");
-        let timeStart = new Date().getTime();
         const id = req.params.id;
-        const numberOfProducts = req.params.num || 5;
-        const product = await Product.findById(id);
-        let productName = product.name.replace(/-/g, "%20");
+        const numberOfProducts = req.params.num || 10;
+        const scrapProduct = await Product.findById(id);
+        let productName = (scrapProduct.searchName != '') ? scrapProduct.searchName.replace(/-/g, "%20") : scrapProduct.name.replace(/-/g, "%20");
+        productName = toLowerCaseNonAccentVietnamese(productName);
         console.log("Opening Browser");
         let searchLink = `https://tiki.vn/search?q=${productName}`;
+        console.log(productName);
         await page.goto(searchLink);
         await page.waitForSelector(".jOZPiC");
         console.log("Browser opened");
@@ -229,14 +278,23 @@ export const scrapTiki = async (req, res) => {
             const soldNumber = await handleSoldNumberTiki(productHandle);
             const link = await productHandle.$eval('.product-item', a => a.href);
             // const img = await productHandle.$eval('img', img => img.srcset.split(",")[0].split(" ")[0]);
-            const product = { name, price, soldNumber, link }
+            const similarityScore = calculateSimilarityScore(scrapProduct.name, toLowerCaseNonAccentVietnamese(name));
+            const product = { name, price, soldNumber, link, similarityScore }
             products.push(product);
         }
-        let timeEnd = new Date().getTime();
-        products.sort((a, b) => b.soldNumber - a.soldNumber);
+
+        const productCategory = await Category.findById(scrapProduct.category);
+        productCategory.name = toLowerCaseNonAccentVietnamese(productCategory.name.trim().split(' ')[0]);
+        const productBrand = await Brand.findById(scrapProduct.brand);
+        productBrand.name = toLowerCaseNonAccentVietnamese(productBrand.name);
+        let keywords = [];  
+        if (scrapProduct.searchName !== '') {
+            keywords = getKeywords(scrapProduct.searchName);
+        }
+        products = filterProductsByKeywords(products, keywords, productCategory.name, productBrand.name);
+        products.sort((a, b) => b.similarityScore - a.similarityScore);
         
         await browser.close();
-        console.log("Times taken: ", timeEnd - timeStart);
         await Product.findByIdAndUpdate(id, { dataFromScrapingTiki: { products: products.slice(0, numberOfProducts), lastScraped: new Date() }});
         res.status(200).json({ dataFromScrapingTiki: { products: products.slice(0, numberOfProducts), lastScraped: new Date() }});
     } catch (error) {
@@ -264,7 +322,6 @@ export const scrapSendo = async (req, res) => {
             req.continue();
         }
     });
-    let timeStart = new Date().getTime();
     try {
         let id = req.params.id;
         let numberOfProducts = req.params.num || 5;
@@ -303,3 +360,64 @@ export const scrapSendo = async (req, res) => {
         await browser.close();
     }
 }
+
+export const scrapHasaki = async (req, res) => {
+    const browser = await puppeteer.launch({
+        defaultViewport: null,
+        userDataDir: './tmp',
+    });
+    const page = await browser.newPage();
+    await page.setRequestInterception(true);
+    page.on('request', (req) => {
+        if (req.resourceType() == 'stylesheet' || req.resourceType() == 'font' || req.resourceType() == 'image') {
+            req.abort();
+        }
+        else {
+            req.continue();
+        }
+    });
+    try {
+        let id = req.params.id;
+        let numberOfProducts = req.params.num || 5;
+        const scrapProduct = await Product.findById(id);
+        let productName = (scrapProduct.searchName != '') ? scrapProduct.searchName.replace(/-/g, "%20") : scrapProduct.name.replace(/-/g, "%20");
+        productName = toLowerCaseNonAccentVietnamese(productName);
+        console.log("Opening Browser");
+        let searchLink = `https://hasaki.vn/catalogsearch/result/?q=${productName}`;
+        console.log(productName);
+        await page.goto(searchLink, { waitUntil: 'domcontentloaded' });
+        console.log("Scraping Hasaki");
+        await page.waitForSelector(".list_product");
+        const productsHandles = await page.$$(".list_product > div");
+        console.log(productsHandles.length);    
+        let productsHasaki = [];
+        for (const productHandle of productsHandles) {
+            const name = await productHandle.$eval('.vn_names', div => div.innerText);
+            const price = await productHandle.$eval('.item_giamoi', strong => strong.innerText);
+            const soldNumber = await handleSoldNumber(productHandle, '.item_count_by');
+            const link = await productHandle.$eval('.block_info_item_sp', a => a.href);
+            const similarityScore = calculateSimilarityScore(scrapProduct.name, toLowerCaseNonAccentVietnamese(name));
+            const product = { name, price, soldNumber, link, similarityScore };
+            productsHasaki.push(product);
+        }
+        console.log("Scraping complete");
+        const productCategory = await Category.findById(scrapProduct.category);
+        productCategory.name = toLowerCaseNonAccentVietnamese(productCategory.name.trim().split(' ')[0]);
+        const productBrand = await Brand.findById(scrapProduct.brand);
+        productBrand.name = toLowerCaseNonAccentVietnamese(productBrand.name);
+        let keywords = [];
+        if (scrapProduct.searchName !== '') {
+            keywords = getKeywords(scrapProduct.searchName);
+        }
+        productsHasaki = filterProductsByKeywords(productsHasaki, keywords, productCategory.name, productBrand.name);
+        productsHasaki.sort((a, b) => b.similarityScore - a.similarityScore);
+        await Product.findByIdAndUpdate(id, { dataFromScrapingHasaki: { products: productsHasaki.slice(0, numberOfProducts), lastScraped: new Date() }});
+        res.status(200).json({ dataFromScrapingHasaki: { products: productsHasaki.slice(0, numberOfProducts), lastScraped: new Date() }});
+    } catch (error) {
+        console.log("Error");
+        res.status(400).json({ error: error.message });
+    }
+    finally {
+        await browser.close();
+    }
+};

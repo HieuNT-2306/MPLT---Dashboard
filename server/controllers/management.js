@@ -26,37 +26,6 @@ export const updateCategory = async (req, res) => {
         }
 
         if (name) category.name = name;
-        // Debug
-        // Update dailyData 
-        // if (dailyData) {
-        //     const day = new Date(dailyData.day);
-        //     const index = category.dailyData.findIndex((data) =>
-        //         data.day.getFullYear() === day.getFullYear() &&
-        //         data.day.getMonth() === day.getMonth() &&
-        //         data.day.getDate() === day.getDate()
-        //     );
-        //     if (index !== -1) {
-        //         category.dailyData[index].salesTotal += dailyData.salesTotal;
-        //         category.dailyData[index].salesUnits += dailyData.salesUnits;
-        //     } else {
-        //         category.dailyData.push(dailyData);
-        //     }
-
-        //     // Update monthlyData
-        //     const monthIndex = category.monthlyData.findIndex(data => data.year === day.getFullYear() && data.month === day.getMonth());
-        //     if (monthIndex !== -1) {
-        //         category.monthlyData[monthIndex].salesTotal += dailyData.salesTotal;
-        //         category.monthlyData[monthIndex].salesUnits += dailyData.salesUnits;
-        //     } else {
-        //         category.monthlyData.push({
-        //             year: day.getFullYear(),
-        //             month: day.getMonth(),
-        //             salesTotal: dailyData.salesTotal,
-        //             salesUnits: dailyData.salesUnits
-        //         });
-        //     }
-        // }
-        // End debug
         const updatedCategory = await category.save();
 
         res.json(updatedCategory);

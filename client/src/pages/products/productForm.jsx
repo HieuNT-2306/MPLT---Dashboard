@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import SelectButton from 'components/controls/SelectButton';
-import { useGetBrandsQuery, useGetCategoriesQuery, useScrapLazadaMutation, useScrapTikiMutation } from 'state/api'
+import { useGetBrandsQuery, useGetCategoriesQuery, useScrapHasakiMutation, useScrapLazadaMutation, useScrapTikiMutation } from 'state/api'
 import { useTheme } from "@emotion/react";
 import { Box, Grid, Link, Paper, TextField, Typography } from "@mui/material";
 import { Useform, FormCustom } from "components/Useform";
@@ -30,8 +30,11 @@ export default function ProductForm(props) {
   const { data: brands, isLoading: isLoadingBrands } = useGetBrandsQuery();
   const [scrapLazada] = useScrapLazadaMutation();
   const [scrapTiki] = useScrapTikiMutation();
+  const [scrapHasaki] = useScrapHasakiMutation();
+
   const [scrapLazadaLoading, setScrapLazadaLoading] = useState(false);
-  const [scrapTikiLoading, setScrapTikiLoading] = useState(false);  
+  const [scrapTikiLoading, setScrapTikiLoading] = useState(false);
+  const [scrapHasakiLoading, setScrapHasakiLoading] = useState(false);
   const { addOrEdit, dataForEdit } = props;
 
   const theme = useTheme();
@@ -86,9 +89,9 @@ export default function ProductForm(props) {
   const handleSubmit = (e) => {
     e.preventDefault();
     const formData = new FormData();
-    formData.append("_id", values._id ? values._id : null);
+    if (values._id) formData.append("_id", values._id);
     formData.append("name", values.name);
-    formData.append("searchName", values.searchName); 
+    formData.append("searchName", values.searchName);
     formData.append("price", values.price);
     formData.append("description", values.description);
     formData.append("category", values.category);
@@ -109,7 +112,7 @@ export default function ProductForm(props) {
     });
   };
   const getDataFromLazada = async (id) => {
-    console.log("id", id);  
+    console.log("id", id);
     setScrapLazadaLoading(true);
     const response = await scrapLazada(id);
     console.log("response", response);
@@ -123,7 +126,7 @@ export default function ProductForm(props) {
   }
 
   const getDataFromTiki = async (id) => {
-    console.log("id", id);  
+    console.log("id", id);
     setScrapTikiLoading(true);
     const response = await scrapTiki(id);
     setValues({
@@ -132,6 +135,18 @@ export default function ProductForm(props) {
     })
     setScrapTikiLoading(false);
   }
+
+  const getDataFromHasaki = async (id) => {
+    console.log("id", id);
+    setScrapHasakiLoading(true);
+    const response = await scrapHasaki(id);
+    setValues({
+      ...values,
+      dataFromScrapingHasaki: response.data.dataFromScrapingHasaki
+    })
+    setScrapHasakiLoading(false);
+  }
+  
   useEffect(() => {
     if (dataForEdit != null) {
       setValues({
@@ -236,15 +251,15 @@ export default function ProductForm(props) {
             display: 'flex',
             justifyContent: 'space-end',
           }}>
-                  <CustomButton
-                    variant="contained"
-                    color="secondary"
-                    size="large"
-                    text="Quét dữ liệu từ Lazada"
-                    onClick={() => {getDataFromLazada(values._id)}}
-                    disabled={values._id ? false : true }
-                    sx={styles.customButton}
-                />
+            <CustomButton
+              variant="contained"
+              color="secondary"
+              size="large"
+              text="Quét dữ liệu từ Lazada"
+              onClick={() => { getDataFromLazada(values._id) }}
+              disabled={values._id ? false : true}
+              sx={styles.customButton}
+            />
           </Box>
           <Box
             sx={{
@@ -254,11 +269,13 @@ export default function ProductForm(props) {
             }}
           >
             {
-               scrapLazadaLoading ? (
+              scrapLazadaLoading ? (
                 <Typography variant="h6" margin="8px">Xin hãy chờ trong giây lát.....</Typography>
-              ) : (values.dataFromScrapingLazada ? values.dataFromScrapingLazada.products?.map((item, index) => {
+              ) : (values.dataFromScrapingLazada ? 
+                values.dataFromScrapingLazada.products?.length > 0 ? 
+                  (values.dataFromScrapingLazada.products.map((item, index) => {
                 return (
-                  <Paper key={index} sx={{ margin: "5px", padding: "5px", minWidth: "250px", border: "2px solid", borderColor: theme.palette.neutral[200]}}>
+                  <Paper key={index} sx={{ margin: "5px", padding: "5px", minWidth: "250px", border: "2px solid", borderColor: theme.palette.neutral[200] }}>
                     {/* <a href={item.link} target="_blank">
                       <img src={item.img} style={{ width: "100%", aspectRatio: "1 / 1", objectFit: "cover", border: "1px solid blue" }}/>
                     </a> */}
@@ -276,16 +293,21 @@ export default function ProductForm(props) {
                       target="_blank"
                     >{item.name}</a>
                     <Typography variant="body1" color={theme.palette.secondary[400]} >{item.price}</Typography>
-                    <Typography variant="body1" color={theme.palette.secondary[400]}>Số lượng bán ra: {item.soldNumber}</Typography>
+                    <Typography variant="body1" color={theme.palette.secondary[400]}>Số lượng bán ra: {item.soldNumber == -1 ? "Không có" : item.soldNumber}</Typography>
                   </Paper>
                 )
-              }) : null)
+              })): (
+                <Paper sx={{ margin: "5px", padding: "5px", minWidth: "95%", border: "2px solid", borderColor: theme.palette.neutral[200] }}>
+                  <Typography variant="h6" color={theme.palette.secondary[400]} >Không tìm kiếm thấy sản phẩm nào phù hợp!</Typography>
+                </Paper>
+              )
+               : null)
               //console.log(values.dataFromScrapingLazada.products)
             }
           </Box>
           {
             values.dataFromScrapingLazada
-              ? <Typography variant="h6"  margin="8px" >Thời gian lấy dữ liệu lần cuối: {new Date(values.dataFromScrapingLazada.lastScraped).toLocaleString('vi-VN')}</Typography>
+              ? <Typography variant="h6" margin="8px" >Thời gian lấy dữ liệu lần cuối: {new Date(values.dataFromScrapingLazada.lastScraped).toLocaleString('vi-VN')}</Typography>
               : null
           }
         </Grid>
@@ -295,15 +317,15 @@ export default function ProductForm(props) {
             display: 'flex',
             justifyContent: 'space-end',
           }}>
-                  <CustomButton
-                    variant="contained"
-                    color="secondary"
-                    size="large"
-                    text="Quét dữ liệu từ Tiki"
-                    onClick={() => {getDataFromTiki(values._id)}}
-                    disabled={values._id ? false : true }
-                    sx={styles.customButton}
-                />
+            <CustomButton
+              variant="contained"
+              color="secondary"
+              size="large"
+              text="Quét dữ liệu từ Tiki"
+              onClick={() => { getDataFromTiki(values._id) }}
+              disabled={values._id ? false : true}
+              sx={styles.customButton}
+            />
           </Box>
           <Box
             sx={{
@@ -315,36 +337,100 @@ export default function ProductForm(props) {
             {
               scrapTikiLoading ? (
                 <Typography variant="h6" margin="8px">Xin hãy chờ trong giây lát.....</Typography>
-              ) :(values.dataFromScrapingTiki ? values.dataFromScrapingTiki.products?.map((item, index) => {
-                return (
-                  <Paper key={index} sx={{ margin: "5px", padding: "5px", minWidth: "250px", border: "2px solid", borderColor: theme.palette.neutral[200]}}>
-                    {/* <a href={item.link} target="_blank">
-                      <img src={item.img} style={{ width: "100%", aspectRatio: "1 / 1", objectFit: "cover", border: "1px solid blue" }}/>
-                    </a> */}
-                    <a
-                      style={{
-                        color: theme.palette.neutral[100],
-                        textDecoration: "none",
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        display: "block",
-                        maxWidth: "100%",
-                      }}
-                      href={item.link}
-                      target="_blank"
-                    >{item.name}</a>
-                    <Typography variant="body1" color={theme.palette.secondary[400]} >{item.price}</Typography>
-                    <Typography variant="body1" color={theme.palette.secondary[400]}>Số lượng bán ra: {item.soldNumber}</Typography>
-                  </Paper>
-                )
-              }) : null)
+              ) : (values.dataFromScrapingTiki ?
+                values.dataFromScrapingTiki.products?.length > 0 ?
+                  (values.dataFromScrapingTiki.products.map((item, index) => {
+                    return (
+                      <Paper key={index} sx={{ margin: "5px", padding: "5px", minWidth: "250px", border: "2px solid", borderColor: theme.palette.neutral[200] }}>
+                        <a
+                          style={{
+                            color: theme.palette.neutral[100],
+                            textDecoration: "none",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            display: "block",
+                            maxWidth: "100%",
+                          }}
+                          href={item.link}
+                          target="_blank"
+                        >{item.name}</a>
+                        <Typography variant="body1" color={theme.palette.secondary[400]} >{item.price}</Typography>
+                        <Typography variant="body1" color={theme.palette.secondary[400]}>Số lượng bán ra: {item.soldNumber == -1 ? "Không có" : item.soldNumber}</Typography>
+                      </Paper>
+                    )
+                  })) :
+                  (
+                    <Paper sx={{ margin: "5px", padding: "5px", minWidth: "95%", border: "2px solid", borderColor: theme.palette.neutral[200] }}>
+                      <Typography variant="h6" color={theme.palette.secondary[400]} >Không tìm kiếm thấy sản phẩm nào phù hợp!</Typography>
+                    </Paper>
+                  )
+                : null)
               //console.log(values.dataFromScrapingLazada.products)
             }
           </Box>
           {
-            values.dataFromScrapingTiki ? <Typography variant="h6"  margin="8px">Thời gian lấy dữ liệu lần cuối: {new Date(values.dataFromScrapingTiki.lastScraped).toLocaleString('vi-VN')}</Typography> : null
+            values.dataFromScrapingTiki ? <Typography variant="h6" margin="8px">Thời gian lấy dữ liệu lần cuối: {new Date(values.dataFromScrapingTiki.lastScraped).toLocaleString('vi-VN')}</Typography> : null
           }
+        </Grid>
+        <Grid item xs={12} >
+          <Typography variant="h5" margin="8px">Hasaki:</Typography>
+          <Box sx={{
+            display: 'flex',
+            justifyContent: 'space-end',
+          }}>
+            <CustomButton
+              variant="contained"
+              color="secondary"
+              size="large"
+              text="Quét dữ liệu từ Hasaki"
+              onClick={() => { getDataFromHasaki(values._id) }}
+              disabled={values._id ? false : true}
+              sx={styles.customButton}
+            />
+          </Box>
+          <Box
+            sx={{
+              display: 'flex',
+              width: "100%",
+              overflowX: 'auto'
+            }}
+          >
+            {
+              scrapHasakiLoading ? (
+                <Typography variant="h6" margin="8px">Xin hãy chờ trong giây lát.....</Typography>
+              ) : (values.dataFromScrapingHasaki ?
+                values.dataFromScrapingHasaki.products?.length > 0 ?
+                  (values.dataFromScrapingHasaki.products.map((item, index) => {
+                    return (
+                      <Paper key={index} sx={{ margin: "5px", padding: "5px", minWidth: "250px", border: "2px solid", borderColor: theme.palette.neutral[200] }}>
+                        <a
+                          style={{
+                            color: theme.palette.neutral[100],
+                            textDecoration: "none",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            display: "block",
+                            maxWidth: "100%",
+                          }}
+                          href={item.link}
+                          target="_blank"
+                        >{item.name}</a>
+                        <Typography variant="body1" color={theme.palette.secondary[400]} >{item.price}</Typography>
+                        <Typography variant="body1" color={theme.palette.secondary[400]}>Số lượng bán ra: {item.soldNumber == -1 ? "Không có" : item.soldNumber}</Typography>
+                      </Paper>
+                    )
+                  })) :
+                  (
+                    <Paper sx={{ margin: "5px", padding: "5px", minWidth: "95%", border: "2px solid", borderColor: theme.palette.neutral[200] }}>
+                      <Typography variant="h6" color={theme.palette.secondary[400]} >Không tìm kiếm thấy sản phẩm nào phù hợp!</Typography>
+                    </Paper>
+                  )
+                : null)
+              //console.log(values.dataFromScrapingLazada.products)
+            }
+          </Box>
         </Grid>
         <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
           <CustomButton

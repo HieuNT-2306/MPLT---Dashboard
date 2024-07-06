@@ -113,6 +113,13 @@
                 }),
                 invalidatesTags: ['Scrap']
             }),
+            scrapHasaki: builder.mutation({
+                query: (id, num) => ({
+                    url: `scrap/hasaki/id=${id}&num=10`,
+                    method: 'POST'
+                }),
+                invalidatesTags: ['Scrap']
+            })
         })
     })
 
@@ -132,6 +139,8 @@
         useUpdateProductMutation,
         useDeleteProductMutation,
         useDeleteCustomerMutation,
+        // scrap
         useScrapLazadaMutation,
-        useScrapTikiMutation
+        useScrapTikiMutation,
+        useScrapHasakiMutation
     } = api;
