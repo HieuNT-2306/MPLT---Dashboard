@@ -6,6 +6,10 @@ const ProductSchema = mongoose.Schema({
         required: true,
         unique: true
     },
+    searchName: {
+        type: String,
+        default: '',
+    },
     price: {
         type: Number, 
         required: true,

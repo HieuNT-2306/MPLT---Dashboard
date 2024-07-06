@@ -27,6 +27,20 @@ const handleSoldNumberSendo = async (productHandle) => {
     else return await productHandle.$eval('.d7ed-bm83Kw', span => span.innerText);
 }
 
+const toLowerCaseNonAccentVietnamese = (str) => {
+    str = str.toLowerCase();
+    str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
+    str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
+    str = str.replace(/ì|í|ị|ỉ|ĩ/g, "i");
+    str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o");
+    str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u");
+    str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
+    str = str.replace(/đ/g, "d");
+    str = str.replace(/\u0300|\u0301|\u0303|\u0309|\u0323/g, ""); 
+    str = str.replace(/\u02C6|\u0306|\u031B/g, ""); 
+    return str;
+}
+
 const handleNumber = (number) => {
     const numberText = number.replace(/[^\d.]/g, '');
     let cleanedNumber = parseFloat(numberText, 10);
@@ -36,6 +50,68 @@ const handleNumber = (number) => {
     return cleanedNumber;
 };
 
+
+// export const scrapLazada = async (req, res) => {
+//     const browser = await puppeteer.launch({
+//         headless: false,
+//         defaultViewport: null,
+//         userDataDir: './tmp',
+//     });
+//     const page = await browser.newPage();
+//     await page.setRequestInterception(true);
+//     page.on('request', (req) => {
+//         if (req.resourceType() == 'stylesheet' || req.resourceType() == 'font' || req.resourceType() == 'image') {
+//             req.abort();
+//         }
+//         else {
+//             req.continue();
+//         }
+//     });
+//     try {
+//         console.log("Begin");
+//         console.log("Scraping Lazada");
+//         let id = req.params.id;
+//         let numberOfProducts = req.params.num || 5;
+//         const product = await Product.findById(id);
+//         let productName = product.name.replace(/-/g, "%20");
+//         productName = toLowerCaseNonAccentVietnamese(productName);
+//         console.log("Product name: ", productName);
+//         let searchLink = `https://www.lazada.vn/catalog/?2&q=${productName}`;
+//         let timeStart = new Date().getTime();
+//         console.log("Opening Browser");
+//         await page.goto(searchLink);
+//         console.log("Browser opened");
+//         await page.waitForSelector("._17mcb");
+//         console.log("Scraping for products in ._17mcb");
+//         const productsHandles = await page.$$(
+//             "._17mcb > div"
+//         );
+//         let productsLazada = [];
+//         for (const productHandle of productsHandles) {
+//             const name = await productHandle.$eval('.RfADt > a', a => {
+//                 const anchorText = a.cloneNode(true).innerHTML;
+//                 return anchorText.replace(/<i[^>]*>|<\/i>/g, "");
+//             });
+//             const price = await productHandle.$eval('.aBrP0 > span', span => span.innerText);
+//             const soldNumber = await handleSoldNumber(productHandle);
+//             const link = await productHandle.$eval('.RfADt > a', a => a.href);
+//             const product = { name, price, soldNumber, link }
+//             productsLazada.push(product);
+//         }
+//         console.log("Scraping complete");
+//         productsLazada.sort((a, b) => b.soldNumber - a.soldNumber);
+//         let timeEnd = new Date().getTime();
+//         console.log("Scraping complete");
+//         console.log("Times taken: ", timeEnd - timeStart);
+//         await Product.findByIdAndUpdate(id, { dataFromScrapingLazada: { products: productsLazada.slice(0, numberOfProducts), lastScraped: new Date() }});
+//         res.status(200).json({ dataFromScrapingLazada: { products: productsLazada.slice(0, numberOfProducts), lastScraped: new Date() }})
+
+//     } catch (error) {
+//         res.status(400).json({ error: error.message });
+//     } finally {
+//         await browser.close();
+//     }
+// }
 
 export const scrapLazada = async (req, res) => {
     const browser = await puppeteer.launch({
@@ -57,10 +133,10 @@ export const scrapLazada = async (req, res) => {
         let id = req.params.id;
         let numberOfProducts = req.params.num || 5;
         const product = await Product.findById(id);
-        console.log(product);
-        const productName = product.name.replace(/-/g, "%20");
+        let productName = (product.searchName != '') ? product.searchName.replace(/-/g, "%20") : product.name.replace(/-/g, "%20");
+        productName = toLowerCaseNonAccentVietnamese(productName);
         let searchLink = `https://www.lazada.vn/catalog/?2&q=${productName}`;
-        let timeStart = new Date().getTime();
+        console.log(productName)
         console.log("Opening Browser");
         await page.goto(searchLink);
         console.log("Browser opened");
@@ -70,6 +146,8 @@ export const scrapLazada = async (req, res) => {
             "._17mcb > div"
         );
         let productsLazada = [];
+        console.log(productsHandles.length);
+
         for (const productHandle of productsHandles) {
             const name = await productHandle.$eval('.RfADt > a', a => {
                 const anchorText = a.cloneNode(true).innerHTML;
@@ -78,18 +156,28 @@ export const scrapLazada = async (req, res) => {
             const price = await productHandle.$eval('.aBrP0 > span', span => span.innerText);
             const soldNumber = await handleSoldNumberLazada(productHandle);
             const link = await productHandle.$eval('.RfADt > a', a => a.href);
-            //const img = await productHandle.$eval('.picture-wrapper.jBwCF > img', img => img.src)
+            // const img = await productHandle.$eval('.picture-wrapper.jBwCF > img', async img => {
+            //     await new Promise((resolve, reject) => {
+            //         if (img.complete) {
+            //             resolve();
+            //         } else {
+            //             img.addEventListener('load', resolve);
+            //             img.addEventListener('error', reject);
+            //         }
+            //     });
+            //     return img;
+            // });
+            // const img = await productHandle.$eval('.picture-wrapper.jBwCF > img', img => img.src);
             const product = { name, price, soldNumber, link }
             productsLazada.push(product);
         }
-        productsLazada.sort((a, b) => b.soldNumber - a.soldNumber);
-        let timeEnd = new Date().getTime();
         console.log("Scraping complete");
         await browser.close();
-
+        //return { "Lazada": productsLazada, "TimesTakenInMS": timeEnd - timeStart };
+        
+        productsLazada.sort((a, b) => b.soldNumber - a.soldNumber);
         await Product.findByIdAndUpdate(id, { dataFromScrapingLazada: { products: productsLazada.slice(0, numberOfProducts), lastScraped: new Date() }});
-        res.status(200).json({ "Lazada": productsLazada.slice(0,numberOfProducts), "TimesTakenInMS": timeEnd - timeStart })
-
+        res.status(200).json({ dataFromScrapingLazada: { products: productsLazada.slice(0, numberOfProducts), lastScraped: new Date() }})
     } catch (error) {
         res.status(400).json({ error: error.message });
     } finally {
@@ -97,9 +185,9 @@ export const scrapLazada = async (req, res) => {
     }
 }
 
+
 export const scrapTiki = async (req, res) => {
     const browser = await puppeteer.launch({
-        headless: true,
         defaultViewport: null,
         userDataDir: './tmp',
         //args: ['--start-maximized']
@@ -140,17 +228,17 @@ export const scrapTiki = async (req, res) => {
             const price = await productHandle.$eval('.price-discount__price', div => div.innerText);
             const soldNumber = await handleSoldNumberTiki(productHandle);
             const link = await productHandle.$eval('.product-item', a => a.href);
-            const img = await productHandle.$eval('img', img => img.srcset.split(",")[0].split(" ")[0]);
-            const product = { name, price, soldNumber, link, img }
+            // const img = await productHandle.$eval('img', img => img.srcset.split(",")[0].split(" ")[0]);
+            const product = { name, price, soldNumber, link }
             products.push(product);
         }
         let timeEnd = new Date().getTime();
         products.sort((a, b) => b.soldNumber - a.soldNumber);
         
         await browser.close();
-
+        console.log("Times taken: ", timeEnd - timeStart);
         await Product.findByIdAndUpdate(id, { dataFromScrapingTiki: { products: products.slice(0, numberOfProducts), lastScraped: new Date() }});
-        res.status(200).json({ "Tiki": products.slice(0, numberOfProducts), "TimesTakenInMS": timeEnd - timeStart });
+        res.status(200).json({ dataFromScrapingTiki: { products: products.slice(0, numberOfProducts), lastScraped: new Date() }});
     } catch (error) {
         console.log("Browser not opened");
         res.status(400).json({ error: error.message });

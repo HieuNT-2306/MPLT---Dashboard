@@ -83,49 +83,49 @@ export const getTransactions = async (req, res) => {
     }
 }
 
-export const postProducts = async (req, res) => {
-    try {
-        const { name, description, price, category, supply, brand } = req.body;
-        let imgLink = "./temp/" + req.file.filename;
-        const uploadImgResult = await cloudinary.uploader.upload(imgLink, { resource_type: 'image' });
-        fs.unlink(imgLink, err => {
-            if (err) {
-                console.error(err);
-                return res.status(500).json({ message: err.message });
-            }
-        });
-        const priceHistory = [
-            {
-                price, date: new Date()
-            }
-        ]
-        const newProduct = new Product({
-            name, description, price, category, supply, brand, priceHistory,
-            img: uploadImgResult.secure_url,
-        });
-        await newProduct.save();
-        const newProductStat = new ProductStat({
-            productId: newProduct._id,
-            yearlySalesTotal: 0,
-            yearlySalesUnits: 0,
-            year: new Date().getFullYear(),
-            monthlyData: [],
-            dailyData: []
-        });
-        await newProductStat.save();
-        res.status(201).json({ message: "Add product succesfully",product: newProduct, productStat: newProductStat });
-    } catch (error) {
-        console.log(error);
-        res.status(404).json({
-            message: error.message,
-        });
-    }
-};
+// export const postProducts = async (req, res) => {
+//     try {
+//         const { name, description, price, category, supply, brand } = req.body;
+//         let imgLink = "./temp/" + req.file.filename;
+//         const uploadImgResult = await cloudinary.uploader.upload(imgLink, { resource_type: 'image' });
+//         fs.unlink(imgLink, err => {
+//             if (err) {
+//                 console.error(err);
+//                 return res.status(500).json({ message: err.message });
+//             }
+//         });
+//         const priceHistory = [
+//             {
+//                 price, date: new Date()
+//             }
+//         ]
+//         const newProduct = new Product({
+//             name, description, price, category, supply, brand, priceHistory,
+//             img: uploadImgResult.secure_url,
+//         });
+//         await newProduct.save();
+//         const newProductStat = new ProductStat({
+//             productId: newProduct._id,
+//             yearlySalesTotal: 0,
+//             yearlySalesUnits: 0,
+//             year: new Date().getFullYear(),
+//             monthlyData: [],
+//             dailyData: []
+//         });
+//         await newProductStat.save();
+//         res.status(201).json({ message: "Add product succesfully",product: newProduct, productStat: newProductStat });
+//     } catch (error) {
+//         console.log(error);
+//         res.status(404).json({
+//             message: error.message,
+//         });
+//     }
+// };
 
 export const updateProduct = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, price, description, category, supply } = req.body;
+        const { name, price, description, category, brand, supply } = req.body;
         const product = await Product.findById(id);
 
         if (!product) {
@@ -142,6 +142,7 @@ export const updateProduct = async (req, res) => {
         if (description) product.description = description;
         if (category) product.category = category;
         if (supply) product.supply = supply;
+        if (brand) product.brand = brand; 
         if (req.file) {
             let publicId = product.img.split('/').pop().split('.')[0];
             await cloudinary.uploader.destroy(publicId);
@@ -160,6 +161,89 @@ export const updateProduct = async (req, res) => {
 
         res.json(updatedProduct);
     } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+export const postProducts = async (req, res) => {
+    try {
+        const { _id, name, searchName, description, price, category, supply, brand } = req.body;
+        let product;
+
+        if (_id) {
+            // Update existing product
+            product = await Product.findById(_id);
+
+            if (!product) {
+                return res.status(404).json({ message: 'Product not found' });
+            }
+
+            if (name) product.name = name;
+            if (price) {
+                product.priceHistory.push({
+                    price: price,
+                    date: new Date(),
+                });
+                product.price = price;
+            }
+            if (searchName) product.searchName = searchName;
+            if (description) product.description = description;
+            if (category) product.category = category;
+            if (supply) product.supply = supply;
+            if (brand) product.brand = brand;
+            if (req.file) {
+                let publicId = product.img.split('/').pop().split('.')[0];
+                await cloudinary.uploader.destroy(publicId);
+                let imgLink = './temp/' + req.file.filename;
+                const uploadImgResult = await cloudinary.uploader.upload(imgLink, { resource_type: 'image' });
+                fs.unlink(imgLink, err => {
+                    if (err) {
+                        console.error(err);
+                        return res.status(500).json({ message: err.message });
+                    }
+                });
+                product.img = uploadImgResult.secure_url;
+            }
+
+            const updatedProduct = await product.save();
+            return res.status(200).json({ message: "Update product successfully", product: updatedProduct });
+        } else {
+            // Create new product
+            let imgLink = "./temp/" + req.file.filename;
+            const uploadImgResult = await cloudinary.uploader.upload(imgLink, { resource_type: 'image' });
+            fs.unlink(imgLink, err => {
+                if (err) {
+                    console.error(err);
+                    return res.status(500).json({ message: err.message });
+                }
+            });
+
+            const priceHistory = [
+                {
+                    price, date: new Date()
+                }
+            ];
+
+            const newProduct = new Product({
+                name, searchName, description, price, category, supply, brand, priceHistory,
+                img: uploadImgResult.secure_url,
+            });
+            await newProduct.save();
+
+            const newProductStat = new ProductStat({
+                productId: newProduct._id,
+                yearlySalesTotal: 0,
+                yearlySalesUnits: 0,
+                year: new Date().getFullYear(),
+                monthlyData: [],
+                dailyData: []
+            });
+            await newProductStat.save();
+
+            return res.status(201).json({ message: "Add product successfully", product: newProduct, productStat: newProductStat });
+        }
+    } catch (error) {
+        console.log(error);
         res.status(500).json({ message: error.message });
     }
 };

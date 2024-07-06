@@ -30,7 +30,7 @@ router.get("/transactions", getTransactions);
 router.post("/post/products", upload.single('img'), postProducts);
 router.post("/post/customer", postCustomer);
 router.post("/post/transaction", postTransaction);
-router.post("/update/products/:id", updateProduct);
+router.post("/update/products/:id", upload.single('img'), updateProduct);
 router.delete("/delete/product/:id", deleteProduct);
 router.delete("/delete/customer/:id", deleteCustomer);
 router.delete("/delete/transaction/:id", deleteTransaction);

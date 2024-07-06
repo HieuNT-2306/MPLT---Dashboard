@@ -3,7 +3,7 @@
     export const api = createApi({ 
         baseQuery: fetchBaseQuery({ baseUrl: process.env.REACT_APP_BASE_URL}),
         reducerPath: 'adminApi',
-        tagTypes: ['User', 'Products', 'Customers', 'Transactions', 'Sales', 'Dashboard', 'Categories'],
+        tagTypes: ['User', 'Products', 'Customers', 'Transactions', 'Sales', 'Dashboard', 'Categories', 'Scrap', 'Brands'],
         endpoints: (builder) => ({ 
             getUser: builder.query({
                 query: (id) => `general/user/${id}`,
@@ -76,6 +76,14 @@
                 }),
                 invalidatesTags: ['Products']
             }),
+            updateProduct: builder.mutation({
+                query: (id, productData) => ({
+                    url: `client/update/products/${id}`,
+                    method: 'POST',
+                    body: productData
+                }),
+                invalidatesTags: ['Products']
+            }),
             deleteProduct: builder.mutation({
                 query: (id) => ({
                     url: `client/delete/product/${id}`,
@@ -90,6 +98,20 @@
             getDashboardStats: builder.query({
                 query: () => 'general/dashboard',
                 providesTags: ['Dashboard']
+            }),
+            scrapLazada: builder.mutation({
+                query: (id, num) => ({
+                    url: `scrap/lazada/id=${id}&num=10`,
+                    method: 'POST'
+                }),
+                invalidatesTags: ['Scrap']
+            }),
+            scrapTiki: builder.mutation({
+                query: (id, num) => ({
+                    url: `scrap/tiki/id=${id}&num=10`,
+                    method: 'POST'
+                }),
+                invalidatesTags: ['Scrap']
             }),
         })
     })
@@ -107,6 +129,9 @@
         useGetDashboardStatsQuery,
         useCreateCustomerMutation,
         usePostProductMutation,
+        useUpdateProductMutation,
         useDeleteProductMutation,
-        useDeleteCustomerMutation
+        useDeleteCustomerMutation,
+        useScrapLazadaMutation,
+        useScrapTikiMutation
     } = api;

@@ -16,9 +16,9 @@ const Dashboard = () => {
   console.log("Dashboard", data);
 
   const columns = [
-    { field: 'userId.name', headerName: 'Tên khách hàng', flex: 1, valueGetter: (params) => params.row.userId.name },
-    { field: 'email', headerName: 'Email', flex: 1, valueGetter: (params) => params.row.userId.email },
-    { field: 'phonenumber', headerName: 'Số điện thoại', flex: 1, valueGetter: (params) => params.row.userId.phonenumber },
+    // { field: 'userId.name', headerName: 'Tên khách hàng', flex: 1, valueGetter: (params) => params.row.userId.name },
+    // { field: 'email', headerName: 'Email', flex: 1, valueGetter: (params) => params.row.userId.email },
+    // { field: 'phonenumber', headerName: 'Số điện thoại', flex: 1, valueGetter: (params) => params.row.userId.phonenumber },
     {
       field: 'products', headerName: 'Số sản phẩm mua', flex: 1, sortable: false,
       renderCell: (params) => {
@@ -35,14 +35,14 @@ const Dashboard = () => {
         )
       }
     },
-    {
-      field: 'cost', headerName: 'Tổng tiền', flex: 1,
-      renderCell: (params) => {
-        return (
-          <span>{params.value.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</span>
-        )
-      }
-    },
+    // {
+    //   field: 'cost', headerName: 'Tổng tiền', flex: 1,
+    //   renderCell: (params) => {
+    //     return (
+    //       <span>{params.value.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</span>
+    //     )
+    //   }
+    // },
   ]
   return (
     <Box margin="0.5rem 1.5rem">

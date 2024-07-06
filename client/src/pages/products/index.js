@@ -147,16 +147,22 @@ function Products() {
     const addOrEdit = async (product, resetForm) => {
         console.log("product at editing:", product);
         const response = await postProduct(product);
-        if (response.data.message === "Add product succesfully") {
+        if (response.data.message === "Add product successfully") {
             setNotify({
                 isOpen: true,
                 message: "Thêm sản phẩm thành công",
                 type: "success"
             });
+        } else if (response.data.message === "Update product successfully") {
+            setNotify({
+                isOpen: true,
+                message: "Cập nhật sản phẩm thành công",
+                type: "success"
+            });
         } else {
             setNotify({
                 isOpen: true,
-                message: `Thêm sản phẩm thất bại, lỗi: ${response.data.message}`,
+                message: `Có lỗi sảy ra, xin vui lòng thử lại hoặc báo với admin, lỗi: ${response.data.message}`,
                 type: "error"
             });
         }        
