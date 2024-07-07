@@ -119,7 +119,14 @@
                     method: 'POST'
                 }),
                 invalidatesTags: ['Scrap']
-            })
+            }),
+            scrapSendo: builder.mutation({
+                query: (id, num) => ({
+                    url: `scrap/sendo/id=${id}&num=10`,
+                    method: 'POST'
+                }),
+                invalidatesTags: ['Scrap']
+            }),
         })
     })
 
@@ -142,5 +149,7 @@
         // scrap
         useScrapLazadaMutation,
         useScrapTikiMutation,
-        useScrapHasakiMutation
+        useScrapHasakiMutation,
+        useScrapSendoMutation,
+        
     } = api;

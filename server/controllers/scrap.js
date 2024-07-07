@@ -74,10 +74,10 @@ const filterProductsByKeywords = (products, keywords, brand, category) => {
 }
 
 const handleSoldNumberSendo = async (productHandle) => {
-    if (await productHandle.$('.d7ed-bm83Kw') === null) {
+    if (await productHandle.$('.d7ed-CX1CTf') === null) {
         return -1;
     }
-    else return await productHandle.$eval('.d7ed-bm83Kw', span => span.innerText);
+    else return await productHandle.$eval('.d7ed-CX1CTf', span => span.innerText);
 }
 
 
@@ -155,6 +155,7 @@ const handleNumber = (number) => {
 
 export const scrapLazada = async (req, res) => {
     const browser = await puppeteer.launch({
+        headless: false,
         defaultViewport: null,
         userDataDir: './tmp',
     });
@@ -173,12 +174,12 @@ export const scrapLazada = async (req, res) => {
         let id = req.params.id;
         let numberOfProducts = req.params.num || 10;
         const scrapProduct = await Product.findById(id);
-        let productName = (!scrapProduct.searchName) ? scrapProduct.searchName.replace(/-/g, "%20") : scrapProduct.name.replace(/-/g, "%20");
+        let productName = (scrapProduct.searchName !== '') ? scrapProduct.searchName.replace(/-/g, "%20") : scrapProduct.name.replace(/-/g, "%20");
         productName = toLowerCaseNonAccentVietnamese(productName);
         let searchLink = `https://www.lazada.vn/catalog/?2&q=${productName}`;
         console.log(productName)
         console.log("Opening Browser");
-        await page.goto(searchLink, { waitUntil: 'domcontentloaded' });
+        await page.goto(searchLink);
         console.log("Browser opened");
         await page.waitForSelector("._17mcb");
         console.log("Scraping for products in ._17mcb");
@@ -227,7 +228,7 @@ export const scrapLazada = async (req, res) => {
         await Product.findByIdAndUpdate(id, { dataFromScrapingLazada: { products: productsLazada.slice(0, numberOfProducts), lastScraped: new Date() }});
         res.status(200).json({ dataFromScrapingLazada: { products: productsLazada.slice(0, numberOfProducts), lastScraped: new Date() }})
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        res.status(400).json({ dataFromScrapingLazada: { products: [], lastScraped: new Date() }, error: error.message });
     } finally {
         await browser.close();
     }
@@ -255,7 +256,7 @@ export const scrapTiki = async (req, res) => {
         const id = req.params.id;
         const numberOfProducts = req.params.num || 10;
         const scrapProduct = await Product.findById(id);
-        let productName = (scrapProduct.searchName != '') ? scrapProduct.searchName.replace(/-/g, "%20") : scrapProduct.name.replace(/-/g, "%20");
+        let productName = (scrapProduct.searchName !== '') ? scrapProduct.searchName.replace(/-/g, "%20") : scrapProduct.name.replace(/-/g, "%20");
         productName = toLowerCaseNonAccentVietnamese(productName);
         console.log("Opening Browser");
         let searchLink = `https://tiki.vn/search?q=${productName}`;
@@ -275,7 +276,7 @@ export const scrapTiki = async (req, res) => {
                 return anchorText.replace(/<i[^>]*>|<\/i>/g, "");
             });
             const price = await productHandle.$eval('.price-discount__price', div => div.innerText);
-            const soldNumber = await handleSoldNumberTiki(productHandle);
+            const soldNumber = await handleSoldNumber(productHandle, '.quantity');
             const link = await productHandle.$eval('.product-item', a => a.href);
             // const img = await productHandle.$eval('img', img => img.srcset.split(",")[0].split(" ")[0]);
             const similarityScore = calculateSimilarityScore(scrapProduct.name, toLowerCaseNonAccentVietnamese(name));
@@ -306,9 +307,22 @@ export const scrapTiki = async (req, res) => {
     }
 }
 
+const retry = async (fn, retries = 3, delay = 1000) => {
+    try {
+        return await fn();
+    } catch (err) {
+        if (retries > 0) {
+            console.log(`Retrying... Attempts left: ${retries}`);
+            await new Promise(res => setTimeout(res, delay));
+            return retry(fn, retries - 1, delay);
+        } else {
+            throw err;
+        }
+    }
+};
+
 export const scrapSendo = async (req, res) => {
     const browser = await puppeteer.launch({
-        headless: false, 
         defaultViewport: null,
         userDataDir: './tmp',
     });
@@ -325,12 +339,13 @@ export const scrapSendo = async (req, res) => {
     try {
         let id = req.params.id;
         let numberOfProducts = req.params.num || 5;
-        const product = await Product.findById(id);
-        let productName = product.name.replace(/-/g, "%20");
+        const scrapProduct = await Product.findById(id);
+        let productName = (scrapProduct.searchName !== '') ? scrapProduct.searchName.replace(/-/g, "%20") : scrapProduct.name.replace(/-/g, "%20");
+        productName = toLowerCaseNonAccentVietnamese(productName);
         console.log("Opening Browser");
         let searchLink = `https://www.sendo.vn/tim-kiem?q=${productName}`;
         await page.goto(searchLink);
-        console.log("Scraping sendo 2");
+        console.log("Scraping sendo");
         await page.waitForSelector(".d7ed-fdSIZS .d7ed-OoK3wU .d7ed-mPGbtR");
         const productsHandles = await page.$$(
             ".d7ed-fdSIZS .d7ed-OoK3wU .d7ed-mPGbtR > div"
@@ -339,23 +354,41 @@ export const scrapSendo = async (req, res) => {
         let products = [];
         //await ppage.waitForSelector('.d7ed-fMmmQd.d7ed-_Q8WLO.d7ed-gGVrsi.d7ed-ZnDqnD._0032-L_KUfn.d7ed-OoK3wU')
         for (const productHandle of productsHandles) {
-            //const name = await productHandle.$eval('.d7ed-fMmmQd > span', span => span.innerText);
-            //const price = await productHandle.$eval('.d7ed-AHa8cD', span => span.innerText);
-            //const soldNumber = await handleSoldNumberSendo(productHandle);
-            //const link = await productHandle.$eval('.d7ed-d4keTB.d7ed-OoK3wU > a', a => a.href);
-            //const product = { name, price, soldNumber, link }
-            //products.push(product);
+            try {
+                await page.waitForSelector('.d7ed-mzOLVa', { timeout: 10000 });
+                const nameHandle = await productHandle.$('.d7ed-mzOLVa');
+                if (nameHandle) {
+                    const name = await nameHandle.evaluate(span => span.innerText);
+                    const price = await productHandle.$eval('.d7ed-AHa8cD', span => span.innerText);
+                    const soldNumber = await handleSoldNumber(productHandle, '.d7ed-CX1CTf > span');
+                    const link = await productHandle.$eval('.d7ed-d4keTB.d7ed-OoK3wU > a', a => a.href);
+                    const similarityScore = calculateSimilarityScore(scrapProduct.name, toLowerCaseNonAccentVietnamese(name));
+                    const product = { name, price, soldNumber, link, similarityScore };
+                    products.push(product);
+                } 
+            } catch (error) {
+                console.log("Error while scraping product:", error);
+            }
         }
-        let timeEnd = new Date().getTime();
         console.log("Scraping complete");
-        //res.status(200).json({ "Sendo": products, "TimesTakenInMS": timeEnd - timeStart });
-        products.sort((a, b) => b.soldNumber - a.soldNumber);
-        res.status(200).json({ "Sendo": products.slice(0, numberOfProducts), "TimesTakenInMS": timeEnd - timeStart });
+        const productCategory = await Category.findById(scrapProduct.category);
+        productCategory.name = toLowerCaseNonAccentVietnamese(productCategory.name.trim().split(' ')[0]);
+        const productBrand = await Brand.findById(scrapProduct.brand);
+        productBrand.name = toLowerCaseNonAccentVietnamese(productBrand.name);
+        let keywords = [];
+        if (scrapProduct.searchName !== '') {
+            keywords = getKeywords(scrapProduct.searchName);
+        }
+        products = filterProductsByKeywords(products, keywords, productCategory.name, productBrand.name);
+        products.sort((a, b) => b.similarityScore - a.similarityScore);
+        if (products.length > 0) {
+            await Product.findByIdAndUpdate(id, { dataFromScrapingSendo: { products: products.slice(0, numberOfProducts), lastScraped: new Date() }});
+        }
+        res.status(200).json({ dataFromScrapingSendo: { products: products.slice(0, numberOfProducts), lastScraped: new Date() }});
     }
     catch (error) {
-        let timeEnd = new Date().getTime();
         console.log("Error");
-        res.status(400).json({ error: error.message, "TimeTakenInMS": timeEnd - timeStart });
+        res.status(400).json({ error: error.message});
     } finally {
         await browser.close();
     }
@@ -380,7 +413,7 @@ export const scrapHasaki = async (req, res) => {
         let id = req.params.id;
         let numberOfProducts = req.params.num || 5;
         const scrapProduct = await Product.findById(id);
-        let productName = (scrapProduct.searchName != '') ? scrapProduct.searchName.replace(/-/g, "%20") : scrapProduct.name.replace(/-/g, "%20");
+        let productName = (scrapProduct.searchName !== '') ? scrapProduct.searchName.replace(/-/g, "%20") : scrapProduct.name.replace(/-/g, "%20");
         productName = toLowerCaseNonAccentVietnamese(productName);
         console.log("Opening Browser");
         let searchLink = `https://hasaki.vn/catalogsearch/result/?q=${productName}`;
@@ -421,3 +454,50 @@ export const scrapHasaki = async (req, res) => {
         await browser.close();
     }
 };
+
+export const scrapBeautyBox = async (req, res) => {
+    const browser = await puppeteer.launch({
+        defaultViewport: null,
+        userDataDir: './tmp',
+    });
+    const page = await browser.newPage();
+    await page.setRequestInterception(true);
+    page.on('request', (req) => {
+        if (req.resourceType() == 'stylesheet' || req.resourceType() == 'font' || req.resourceType() == 'image') {
+            req.abort();
+        }
+        else {
+            req.continue();
+        }
+    });
+    try {
+        let id = req.params.id;
+        let numberOfProducts = req.params.num || 5;
+        const scrapProduct = await Product.findById(id);
+        let productName = (scrapProduct.searchName !== '') ? scrapProduct.searchName.replace(/-/g, "%20") : scrapProduct.name.replace(/-/g, "%20");
+        productName = toLowerCaseNonAccentVietnamese(productName).trim();
+        console.log("Opening Browser");
+        let searchLink = `https://beautybox.com.vn/search?searchValue=${productName}`;
+        console.log(productName);
+        await page.goto(searchLink, { waitUntil: 'domcontentloaded' });
+        console.log(searchLink);
+        console.log("Scraping BeautyBox");
+        await page.waitForSelector(".ant-row");
+        const productsHandles = await page.$$(".ant-col-sm-8");
+        console.log(productsHandles.length);
+        let productsBeautyBox = [];
+        for (const productHandle of productsHandles) {
+            const name = await productHandle.$eval('.', div => div.innerText);
+            const product = { name }
+            productsBeautyBox.push(product);
+        }
+        console.log("Scraping complete");
+        res.status(200).json({ "BeautyBox": productsBeautyBox});
+    } catch (error) {
+        console.log("Error");
+        res.status(400).json({ error: error.message });
+    }
+    finally {
+        await browser.close();
+    }
+}

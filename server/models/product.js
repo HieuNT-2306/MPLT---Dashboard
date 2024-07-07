@@ -47,6 +47,9 @@ const ProductSchema = mongoose.Schema({
     dataFromScrapingHasaki: {
         type: Object,
     },
+    dataFromScrapingSendo: {
+        type: Object,
+    },
     priceHistory: [{
         price: {
             type: Number,

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import SelectButton from 'components/controls/SelectButton';
-import { useGetBrandsQuery, useGetCategoriesQuery, useScrapHasakiMutation, useScrapLazadaMutation, useScrapTikiMutation } from 'state/api'
+import { useGetBrandsQuery, useGetCategoriesQuery, useScrapHasakiMutation, useScrapLazadaMutation, useScrapSendoMutation, useScrapTikiMutation } from 'state/api'
 import { useTheme } from "@emotion/react";
 import { Box, Grid, Link, Paper, TextField, Typography } from "@mui/material";
 import { Useform, FormCustom } from "components/Useform";
@@ -20,8 +20,10 @@ const initialValues = {
   supply: "",
   imgFile: null,
   img: "",
-  dataFromScrapingLazada: null,
-  dataFromScrapingTiki: null,
+  dataFromScrapingLazada: [],
+  dataFromScrapingTiki: [],
+  dataFromScrapingHasaki: [],
+  dataFromScrapingSendo: [],
   productStat: {}
 }
 
@@ -31,10 +33,12 @@ export default function ProductForm(props) {
   const [scrapLazada] = useScrapLazadaMutation();
   const [scrapTiki] = useScrapTikiMutation();
   const [scrapHasaki] = useScrapHasakiMutation();
+  const [scrapSendo] = useScrapSendoMutation();
 
   const [scrapLazadaLoading, setScrapLazadaLoading] = useState(false);
   const [scrapTikiLoading, setScrapTikiLoading] = useState(false);
   const [scrapHasakiLoading, setScrapHasakiLoading] = useState(false);
+  const [scrapSendoLoading, setScrapSendoLoading] = useState(false);
   const { addOrEdit, dataForEdit } = props;
 
   const theme = useTheme();
@@ -116,12 +120,10 @@ export default function ProductForm(props) {
     setScrapLazadaLoading(true);
     const response = await scrapLazada(id);
     console.log("response", response);
-    if (response.data.dataFromScrapingLazada) {
-      setValues({
-        ...values,
-        dataFromScrapingLazada: response.data.dataFromScrapingLazada
-      })
-    }
+    setValues({
+      ...values,
+      dataFromScrapingLazada: !response.error ? response.data.dataFromScrapingLazada : []
+    })
     setScrapLazadaLoading(false);
   }
 
@@ -145,6 +147,17 @@ export default function ProductForm(props) {
       dataFromScrapingHasaki: response.data.dataFromScrapingHasaki
     })
     setScrapHasakiLoading(false);
+  }
+
+  const getDataFromSendo = async (id) => {
+    console.log("id", id);
+    setScrapSendoLoading(true);
+    const response = await scrapSendo(id);
+    setValues({
+      ...values,
+      dataFromScrapingSendo: response.data.dataFromScrapingSendo
+    })
+    setScrapSendoLoading(false);
   }
   
   useEffect(() => {
@@ -431,7 +444,73 @@ export default function ProductForm(props) {
               //console.log(values.dataFromScrapingLazada.products)
             }
           </Box>
+          {
+            values.dataFromScrapingHasaki ? <Typography variant="h6" margin="8px">Thời gian lấy dữ liệu lần cuối: {new Date(values.dataFromScrapingHasaki.lastScraped).toLocaleString('vi-VN')}</Typography> : null
+          }
         </Grid>
+
+        <Grid item xs={12} >
+          <Typography variant="h5" margin="8px">Sendo:</Typography>
+          <Box sx={{
+            display: 'flex',
+            justifyContent: 'space-end',
+          }}>
+            <CustomButton
+              variant="contained"
+              color="secondary"
+              size="large"
+              text="Quét dữ liệu từ Sendo"
+              onClick={() => { getDataFromSendo(values._id) }}
+              disabled={values._id ? false : true}
+              sx={styles.customButton}
+            />
+          </Box>
+          <Box
+            sx={{
+              display: 'flex',
+              width: "100%",
+              overflowX: 'auto'
+            }}
+          >
+            {
+              scrapSendoLoading ? (
+                <Typography variant="h6" margin="8px">Xin hãy chờ trong giây lát.....</Typography>
+              ) : (values.dataFromScrapingSendo ?
+                values.dataFromScrapingSendo.products?.length > 0 ?
+                  (values.dataFromScrapingSendo.products.map((item, index) => {
+                    return (
+                      <Paper key={index} sx={{ margin: "5px", padding: "5px", minWidth: "250px", border: "2px solid", borderColor: theme.palette.neutral[200] }}>
+                        <a
+                          style={{
+                            color: theme.palette.neutral[100],
+                            textDecoration: "none",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            display: "block",
+                            maxWidth: "100%",
+                          }}
+                          href={item.link}
+                          target="_blank"
+                        >{item.name}</a>
+                        <Typography variant="body1" color={theme.palette.secondary[400]} >{item.price}</Typography>
+                        <Typography variant="body1" color={theme.palette.secondary[400]}>Số lượng bán ra: {item.soldNumber == -1 ? "Không có" : item.soldNumber}</Typography>
+                      </Paper>
+                    )
+                  }) ) :
+                  (
+                    <Paper sx={{ margin: "5px", padding: "5px", minWidth: "95%", border: "2px solid", borderColor: theme.palette.neutral[200] }}>
+                      <Typography variant="h6" color={theme.palette.secondary[400]} >Không tìm kiếm thấy sản phẩm nào phù hợp!</Typography>
+                    </Paper>
+                  )
+                : null)
+            }
+          </Box>
+          {
+            values.dataFromScrapingSendo ? <Typography variant="h6" margin="8px">Thời gian lấy dữ liệu lần cuối: {new Date(values.dataFromScrapingSendo.lastScraped).toLocaleString('vi-VN')}</Typography> : null
+          }
+        </Grid>
+
         <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
           <CustomButton
             variant="contained"
