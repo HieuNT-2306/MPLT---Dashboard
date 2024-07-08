@@ -7,7 +7,6 @@ const diceCoefficient = (a, b) => {
         }
         return v;
     }
-
     const intersection = (setA, setB) => {
         const _intersection = new Set();
         for (const elem of setB) {
@@ -17,17 +16,16 @@ const diceCoefficient = (a, b) => {
         }
         return _intersection;
     }
-
     const aBigrams = bigrams(a);
     const bBigrams = bigrams(b);
     const intersect = intersection(aBigrams, bBigrams);
-
     return (2 * intersect.size) / (aBigrams.size + bBigrams.size);
+}
+
+export const calculateSimilarityScore = (productName, searchName) => {
+    return diceCoefficient(productName.toLowerCase(), searchName.toLowerCase());
 }
 
 export const filterProductsByKeywords = (products, keyword) => {
     return products.filter(product => product.name.toLowerCase().includes(keyword));
-}
-export const calculateSimilarityScore = (productName, searchName) => {
-    return diceCoefficient(productName.toLowerCase(), searchName.toLowerCase());
 }

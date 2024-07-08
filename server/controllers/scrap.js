@@ -49,8 +49,6 @@ const getKeywords = (str) => {
 }
 
 const filterProductsByKeywords = (products, keywords, brand, category) => {
-    console.log(brand);
-    console.log(category);
     return products.filter(product => {
         const productName = toLowerCaseNonAccentVietnamese(product.name);
         if (!productName.includes(brand) || !productName.includes(category)){
@@ -155,10 +153,10 @@ const handleNumber = (number) => {
 
 export const scrapLazada = async (req, res) => {
     const browser = await puppeteer.launch({
-        headless: false,
         defaultViewport: null,
         userDataDir: './tmp',
     });
+    let timeStart = new Date().getTime();
     const page = await browser.newPage();
     await page.setRequestInterception(true);
     page.on('request', (req) => {
@@ -170,16 +168,15 @@ export const scrapLazada = async (req, res) => {
         }
     });
     try {
-        console.log("Scraping Lazada");
         let id = req.params.id;
         let numberOfProducts = req.params.num || 10;
         const scrapProduct = await Product.findById(id);
         let productName = (scrapProduct.searchName !== '') ? scrapProduct.searchName.replace(/-/g, "%20") : scrapProduct.name.replace(/-/g, "%20");
         productName = toLowerCaseNonAccentVietnamese(productName);
         let searchLink = `https://www.lazada.vn/catalog/?2&q=${productName}`;
-        console.log(productName)
+        console.log("Scraping Lazada for product:", productName);
         console.log("Opening Browser");
-        await page.goto(searchLink);
+        await page.goto(searchLink, { waitUntil: "domcontentloaded"});
         console.log("Browser opened");
         await page.waitForSelector("._17mcb");
         console.log("Scraping for products in ._17mcb");
@@ -187,8 +184,6 @@ export const scrapLazada = async (req, res) => {
             "._17mcb > div"
         );
         let productsLazada = [];
-        console.log(productsHandles.length);
-
         for (const productHandle of productsHandles) {
             const name = await productHandle.$eval('.RfADt > a', a => {
                 const anchorText = a.cloneNode(true).innerHTML;
@@ -213,17 +208,20 @@ export const scrapLazada = async (req, res) => {
             const product = { name, price, soldNumber, link, similarityScore }
             productsLazada.push(product);
         }
+        let keywords = [];
+        if (scrapProduct.searchName !== '') {
+            keywords = getKeywords(scrapProduct.searchName);
+        } 
+        let timeEnd = new Date().getTime();
         console.log("Scraping complete");
+        console.log("Times taken: ", timeEnd - timeStart);
 
         const productCategory = await Category.findById(scrapProduct.category);
         productCategory.name = toLowerCaseNonAccentVietnamese(productCategory.name.trim().split(' ')[0]);
         const productBrand = await Brand.findById(scrapProduct.brand);
         productBrand.name = toLowerCaseNonAccentVietnamese(productBrand.name);
-        let keywords = [];
-        if (scrapProduct.searchName !== '') {
-            keywords = getKeywords(scrapProduct.searchName);
-        } 
         productsLazada = filterProductsByKeywords(productsLazada, keywords, productCategory.name, productBrand.name);
+
         productsLazada.sort((a, b) => b.similarityScore - a.similarityScore);
         await Product.findByIdAndUpdate(id, { dataFromScrapingLazada: { products: productsLazada.slice(0, numberOfProducts), lastScraped: new Date() }});
         res.status(200).json({ dataFromScrapingLazada: { products: productsLazada.slice(0, numberOfProducts), lastScraped: new Date() }})
@@ -243,6 +241,7 @@ export const scrapTiki = async (req, res) => {
     });
     const page = await browser.newPage();
     await page.setRequestInterception(true);
+    let timeBegin = new Date().getTime();
     page.on('request', (req) => {
         if (req.resourceType() == 'stylesheet' || req.resourceType() == 'font' || req.resourceType() == 'image') {
             req.abort();
@@ -257,7 +256,7 @@ export const scrapTiki = async (req, res) => {
         const numberOfProducts = req.params.num || 10;
         const scrapProduct = await Product.findById(id);
         let productName = (scrapProduct.searchName !== '') ? scrapProduct.searchName.replace(/-/g, "%20") : scrapProduct.name.replace(/-/g, "%20");
-        productName = toLowerCaseNonAccentVietnamese(productName);
+        productName = toLowerCaseNonAccentVietnamese(productName).trim();
         console.log("Opening Browser");
         let searchLink = `https://tiki.vn/search?q=${productName}`;
         console.log(productName);
@@ -294,7 +293,9 @@ export const scrapTiki = async (req, res) => {
         }
         products = filterProductsByKeywords(products, keywords, productCategory.name, productBrand.name);
         products.sort((a, b) => b.similarityScore - a.similarityScore);
-        
+        let timeEnd = new Date().getTime();
+        console.log("Scraping complete");
+        console.log("Times taken: ", timeEnd - timeBegin);
         await browser.close();
         await Product.findByIdAndUpdate(id, { dataFromScrapingTiki: { products: products.slice(0, numberOfProducts), lastScraped: new Date() }});
         res.status(200).json({ dataFromScrapingTiki: { products: products.slice(0, numberOfProducts), lastScraped: new Date() }});
@@ -352,7 +353,6 @@ export const scrapSendo = async (req, res) => {
         );
         console.log(productsHandles.length);
         let products = [];
-        //await ppage.waitForSelector('.d7ed-fMmmQd.d7ed-_Q8WLO.d7ed-gGVrsi.d7ed-ZnDqnD._0032-L_KUfn.d7ed-OoK3wU')
         for (const productHandle of productsHandles) {
             try {
                 await page.waitForSelector('.d7ed-mzOLVa', { timeout: 10000 });
