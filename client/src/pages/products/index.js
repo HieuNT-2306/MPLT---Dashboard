@@ -68,7 +68,16 @@ const Product = (
                         {getBrandName(brand)}
                     </Typography>
                 </FlexBetween>
-                <Typography variant="h5" component="div">
+                <Typography variant="h5" component="div"
+                    sx={{
+                        textDecoration: "none",
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        display: "block",
+                        maxWidth: "100%",
+                    }}
+                >
                     {name}
                 </Typography>
                 <Typography sx={{

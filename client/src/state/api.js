@@ -91,6 +91,22 @@
                 }),
                 invalidatesTags: ['Products']
             }),
+            postCategory: builder.mutation({
+                query: (categoryData) => ({
+                    url: 'management/post/category',
+                    method: 'POST',
+                    body: categoryData
+                }),
+                invalidatesTags: ['Categories']
+            }),
+            postBrand: builder.mutation({
+                query: (brandData) => ({
+                    url: 'management/post/brand',
+                    method: 'POST',
+                    body: brandData
+                }),
+                invalidatesTags: ['Brands']
+            }),
             getSales: builder.query({
                 query: () => 'sales/overallstat',
                 providesTags: ['Sales']
@@ -138,6 +154,8 @@
         useGetCustomersQuery,
         useGetTransactionsQuery,
         usePostTransactionMutation,
+        usePostCategoryMutation,
+        usePostBrandMutation,
         useDeleteTransactionMutation,
         useGetSalesQuery,
         useGetDashboardStatsQuery,

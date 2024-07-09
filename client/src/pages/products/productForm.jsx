@@ -7,6 +7,9 @@ import { Useform, FormCustom } from "components/Useform";
 import CustomButton from "components/controls/CustomButton";
 import CustomInput from "components/controls/CustomInput";
 import { Add, AddAPhoto, Edit } from "@mui/icons-material";
+import Popup from "components/Popup";
+import BrandForm from "./brandForm";
+import CategoryForm from "./categoryForm";
 
 
 const initialValues = {
@@ -40,6 +43,9 @@ export default function ProductForm(props) {
   const [scrapHasakiLoading, setScrapHasakiLoading] = useState(false);
   const [scrapSendoLoading, setScrapSendoLoading] = useState(false);
   const { addOrEdit, dataForEdit } = props;
+
+  const [popupCategory, setOpenPopupCategory] = useState(false);
+  const [popupBrand, setOpenPopupBrand] = useState(false);
 
   const theme = useTheme();
   const styles = {
@@ -159,7 +165,7 @@ export default function ProductForm(props) {
     })
     setScrapSendoLoading(false);
   }
-  
+
   useEffect(() => {
     if (dataForEdit != null) {
       setValues({
@@ -214,22 +220,66 @@ export default function ProductForm(props) {
             value={values.searchName}
             onChange={handleInputChange}
           />
-          <SelectButton
-            name="category"
-            label="Danh mục"
-            value={values.category}
-            sx={styles.inputtext50}
-            onChange={handleInputChange}
-            options={categories && categories.map(category => ({ id: category._id, name: category.name }))}
-          />
-          <SelectButton
-            name="brand"
-            label="Nhãn hàng"
-            value={values.brand}
-            sx={styles.inputtext50}
-            onChange={handleInputChange}
-            options={brands && brands.map(category => ({ id: category._id, name: category.name }))}
-          />
+          <Grid container >
+            <Grid item xs={7.5} >
+              <SelectButton
+                name="category"
+                label="Danh mục"
+                value={values.category}
+                sx={styles.inputtext50}
+                onChange={handleInputChange}
+                options={categories && categories.map(category => ({ id: category._id, name: category.name }))}
+              />
+            </Grid>
+            <Grid item xs={3} >
+            <CustomButton 
+                    text="Mới"
+                    variant="outlined"
+                    color="primary"
+                    sx={{
+                        marginTop: '7px',
+                        backgroundColor: theme.palette.primary.light,
+                        color: theme.palette.secondary[100],
+                        width: '100%',
+                        height: '75%',
+                    }}
+                    startIcon={<Add />}
+                    onClick={() => {
+                      setOpenPopupCategory(true)
+                    }}
+                />
+            </Grid>
+            <Grid item xs={7.5} >
+              <SelectButton
+                name="brand"
+                label="Nhãn hàng"
+                value={values.brand}
+                sx={styles.inputtext50}
+                onChange={handleInputChange}
+                options={brands && brands.map(category => ({ id: category._id, name: category.name }))}
+              />
+            </Grid>
+            <Grid item xs={3} >
+            <CustomButton 
+                    text="Mới"
+                    variant="outlined"
+                    color="primary"
+                    sx={{
+                        marginTop: '7px',
+                        backgroundColor: theme.palette.primary.light,
+                        color: theme.palette.secondary[100],
+                        width: '100%',
+                        height: '75%',
+                    }}
+                    startIcon={<Add />}
+                    onClick={() => {
+                      setOpenPopupBrand(true)
+                    }}
+                />
+            </Grid>
+          </Grid>
+          <Grid container >
+          </Grid>
           <CustomInput
             name="supply"
             label="Số lượng trong kho"
@@ -258,6 +308,7 @@ export default function ProductForm(props) {
             error={errors.description}
           />
         </Grid>
+        {/* Lazada*/}
         <Grid item xs={12} >
           <Typography variant="h5" margin="8px">Lazada:</Typography>
           <Box sx={{
@@ -284,37 +335,37 @@ export default function ProductForm(props) {
             {
               scrapLazadaLoading ? (
                 <Typography variant="h6" margin="8px">Xin hãy chờ trong giây lát.....</Typography>
-              ) : (values.dataFromScrapingLazada ? 
-                values.dataFromScrapingLazada.products?.length > 0 ? 
+              ) : (values.dataFromScrapingLazada ?
+                values.dataFromScrapingLazada.products?.length > 0 ?
                   (values.dataFromScrapingLazada.products.map((item, index) => {
-                return (
-                  <Paper key={index} sx={{ margin: "5px", padding: "5px", minWidth: "250px", border: "2px solid", borderColor: theme.palette.neutral[200] }}>
-                    {/* <a href={item.link} target="_blank">
+                    return (
+                      <Paper key={index} sx={{ margin: "5px", padding: "5px", minWidth: "250px", border: "2px solid", borderColor: theme.palette.neutral[200] }}>
+                        {/* <a href={item.link} target="_blank">
                       <img src={item.img} style={{ width: "100%", aspectRatio: "1 / 1", objectFit: "cover", border: "1px solid blue" }}/>
                     </a> */}
-                    <a
-                      style={{
-                        color: theme.palette.neutral[100],
-                        textDecoration: "none",
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        display: "block",
-                        maxWidth: "100%",
-                      }}
-                      href={item.link}
-                      target="_blank"
-                    >{item.name}</a>
-                    <Typography variant="body1" color={theme.palette.secondary[400]} >{item.price}</Typography>
-                    <Typography variant="body1" color={theme.palette.secondary[400]}>Số lượng bán ra: {item.soldNumber == -1 ? "Không có" : item.soldNumber}</Typography>
-                  </Paper>
-                )
-              })): (
-                <Paper sx={{ margin: "5px", padding: "5px", minWidth: "95%", border: "2px solid", borderColor: theme.palette.neutral[200] }}>
-                  <Typography variant="h6" color={theme.palette.secondary[400]} >Không tìm kiếm thấy sản phẩm nào phù hợp!</Typography>
-                </Paper>
-              )
-               : null)
+                        <a
+                          style={{
+                            color: theme.palette.neutral[100],
+                            textDecoration: "none",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            display: "block",
+                            maxWidth: "100%",
+                          }}
+                          href={item.link}
+                          target="_blank"
+                        >{item.name}</a>
+                        <Typography variant="body1" color={theme.palette.secondary[400]} >{item.price}</Typography>
+                        <Typography variant="body1" color={theme.palette.secondary[400]}>Số lượng bán ra: {item.soldNumber == -1 ? "Không có" : item.soldNumber}</Typography>
+                      </Paper>
+                    )
+                  })) : (
+                    <Paper sx={{ margin: "5px", padding: "5px", minWidth: "95%", border: "2px solid", borderColor: theme.palette.neutral[200] }}>
+                      <Typography variant="h6" color={theme.palette.secondary[400]} >Không tìm kiếm thấy sản phẩm nào phù hợp!</Typography>
+                    </Paper>
+                  )
+                : null)
               //console.log(values.dataFromScrapingLazada.products)
             }
           </Box>
@@ -324,6 +375,7 @@ export default function ProductForm(props) {
               : null
           }
         </Grid>
+        {/* Tiki*/}
         <Grid item xs={12} >
           <Typography variant="h5" margin="8px" >Tiki:</Typography>
           <Box sx={{
@@ -386,6 +438,7 @@ export default function ProductForm(props) {
             values.dataFromScrapingTiki ? <Typography variant="h6" margin="8px">Thời gian lấy dữ liệu lần cuối: {new Date(values.dataFromScrapingTiki.lastScraped).toLocaleString('vi-VN')}</Typography> : null
           }
         </Grid>
+        {/* Sendo*/}
         <Grid item xs={12} >
           <Typography variant="h5" margin="8px">Hasaki:</Typography>
           <Box sx={{
@@ -448,7 +501,7 @@ export default function ProductForm(props) {
             values.dataFromScrapingHasaki ? <Typography variant="h6" margin="8px">Thời gian lấy dữ liệu lần cuối: {new Date(values.dataFromScrapingHasaki.lastScraped).toLocaleString('vi-VN')}</Typography> : null
           }
         </Grid>
-
+          {/* Hasaki*/}
         <Grid item xs={12} >
           <Typography variant="h5" margin="8px">Sendo:</Typography>
           <Box sx={{
@@ -497,7 +550,7 @@ export default function ProductForm(props) {
                         <Typography variant="body1" color={theme.palette.secondary[400]}>Số lượng bán ra: {item.soldNumber == -1 ? "Không có" : item.soldNumber}</Typography>
                       </Paper>
                     )
-                  }) ) :
+                  })) :
                   (
                     <Paper sx={{ margin: "5px", padding: "5px", minWidth: "95%", border: "2px solid", borderColor: theme.palette.neutral[200] }}>
                       <Typography variant="h6" color={theme.palette.secondary[400]} >Không tìm kiếm thấy sản phẩm nào phù hợp!</Typography>
@@ -522,6 +575,24 @@ export default function ProductForm(props) {
           />
         </Box>
       </Grid>
+      <Popup
+          title="Thêm danh mục mới"
+          openPopup={popupCategory}
+          setOpenPopup={setOpenPopupCategory}
+      >
+       <CategoryForm 
+        dataForEdit={null}
+       />
+      </Popup>
+      <Popup
+          title="Thêm nhãn hàng mới"
+          openPopup={popupBrand}
+          setOpenPopup={setOpenPopupBrand}
+      >
+        <BrandForm 
+          dataForEdit={null}
+        />
+      </Popup>
     </FormCustom>
   )
 }
